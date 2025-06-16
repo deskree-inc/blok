@@ -23,7 +23,7 @@ const exec = util.promisify(child_process.exec);
 const HOME_DIR = `${os.homedir()}/.nanoctl`;
 const GITHUB_REPO_LOCAL = `${HOME_DIR}/blok`;
 const GITHUB_REPO_REMOTE = "https://github.com/deskree-inc/blok.git";
-const GITHUB_REPO_RELEASE_TAG = "v0.0.1-beta.1";
+const GITHUB_REPO_RELEASE_TAG = "v0.0.1-beta.2";
 
 fsExtra.ensureDirSync(HOME_DIR);
 const options: Partial<SimpleGitOptions> = {
