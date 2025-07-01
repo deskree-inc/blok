@@ -29,29 +29,36 @@
   </p>
 </div>
 
-
+---
 
 <!-- TABLE OF CONTENTS -->
 <details>
-  <summary>Table of Contents</summary>
+  <summary>📋 Table of Contents</summary>
   <ol>
     <li>
       <a href="#about-the-project">About The Project</a>
+      <ul>
+      <li><a href="#key-highlights">Key Highlights</a>
+      <li><a href="#why-blok">Why Blok?</a>
+      </ul>
     </li>
     <li>
       <a href="#getting-started">Getting Started</a>
-      <ul>
-        <li><a href="#templates">Templates</a></li>
-        <li><a href="#npx-package">NPX Package</a></li>
-        <li><a href="#ts-helpers">Templates</a></li>
-      </ul>
     </li>
+    <li><a href="#creating-nodes--workflows">Creating Nodes & Workflows</a></li>
     <li><a href="#running-workflows">Running Workflows</a></li>
     <li><a href="#contributing">Contributing</a></li>
+    <li><a href="#contributing-to-the-blok-documentation">Contributing to the Blok Documentation</a></li>
+    <ul>
+    <li><a href="#prerequisites">Prerequisites</a></li>
+    </ul>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
+    <li><a href="#acknowledgments">Acknowledgments</a></li>
   </ol>
 </details>
+
+---
 
 
 ## About The Project  
@@ -80,6 +87,8 @@ With **Blok**, backend development becomes modular, predictable, and future-proo
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+---
+
 
 <!-- GETTING STARTED -->
 ## Getting Started
@@ -96,6 +105,8 @@ _For more information and examples, visit [Getting Started](https://blok.build/d
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+---
+
 ## Creating Nodes & Workflows
 
 * **Node** is a small functioning unit designed to perform a specific task within a workflow
@@ -105,6 +116,8 @@ _For more information and examples, visit [Getting Started](https://blok.build/d
 _For a step-by-step example of how to use nodes, workflows, and triggers, visit [Quickstart](http://localhost:4000/docs/d/quickstart)_
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+---
 
 ## Running Workflows
 
@@ -116,6 +129,9 @@ To run the created workflow locally:
 _For more examples, please refer to the [Executing Workflows](https://blok.build/docs/d/core-concepts/executing-workflows)_
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
+---
 
 
 <!-- CONTRIBUTING -->
@@ -131,6 +147,8 @@ Don't forget to give the project a star! Thanks again!
 3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
+
+---
 
 <!-- CONTRIBUTING TO THE BLOK DOCUMENTATION -->
 ## Contributing to the Blok Documentation
@@ -182,6 +200,8 @@ git push origin name-of-your-branch
 ```
 10. Create a pull request
 
+---
+
 <!-- LICENSE -->
 ## License
 
@@ -189,7 +209,7 @@ Distributed under the Apache License 2.0. See `LICENSE.txt` for more information
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
+---
 
 <!-- CONTACT -->
 ## Contact
@@ -204,6 +224,8 @@ Project Link: [https://github.com/deskree-inc/blok](https://github.com/deskree-i
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+---
+
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
 
@@ -214,3 +236,5 @@ Some awesome tools used in the project:
 * [Open Telemetry](https://github.com/open-telemetry)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+---
