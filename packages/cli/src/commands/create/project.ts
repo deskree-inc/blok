@@ -107,7 +107,7 @@ export async function createProject(opts: OptionValues, version: string, current
 						message: "Select the runtimes to install",
 						options: [
 							{ label: "NodeJS", value: "node", hint: "recommended" },
-							{ label: "Python3", value: "python3" },
+							//{ label: "Python3", value: "python3" },
 						],
 						initialValues: ["node"],
 					}),
@@ -177,7 +177,7 @@ export async function createProject(opts: OptionValues, version: string, current
 		if (githubLocalExists) {
 			fsExtra.removeSync(GITHUB_REPO_LOCAL);
 		}
-		await git.clone(GITHUB_REPO_REMOTE, GITHUB_REPO_LOCAL, ["--single-branch", "--branch", "mcp-server"]);
+		await git.clone(GITHUB_REPO_REMOTE, GITHUB_REPO_LOCAL, { "--branch": "mcp-server", "--single-branch": null });
 
 		if (!isDefault) s.message("Copying project files...");
 

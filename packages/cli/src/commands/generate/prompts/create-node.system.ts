@@ -31,8 +31,7 @@ Format:
 * Return the entire code, from imports to the end of the class, as it would appear in a \`.ts\` file.
 
 Node class template:
-import { type INanoServiceResponse, NanoService, NanoServiceResponse } from "@blok-ts/runner";
-import { type Context, GlobalError } from "@blok-ts/shared";
+import { type INodeBlokResponse, NodeBlok, NodeBlokResponse, type Context, GlobalError } from "@blok-ts/runner";
 
 type InputType = {
 	message?: string;
@@ -43,7 +42,7 @@ type InputType = {
  * This class is responsible for handling requests and providing responses
  * with automated validation using JSON Schema.
  */
-export default class Node extends NanoService<InputType> {
+export default class Node extends NodeBlok<InputType> {
 	/**
 	 * Initializes a new instance of the Node class.
 	 * Sets up the input and output JSON Schema for automated validation.
@@ -67,8 +66,8 @@ export default class Node extends NanoService<InputType> {
 	 * If an error occurs, it catches the error, creates a GlobalError object, sets the error details,
 	 * and sets the error in the response.
 	 */
-	async handle(ctx: Context, inputs: InputType): Promise<INanoServiceResponse> {
-		const response: NanoServiceResponse = new NanoServiceResponse();
+	async handle(ctx: Context, inputs: InputType): Promise<INodeBlokResponse> {
+		const response = new NodeBlokResponse();
 
 		try {
 			// Your code here

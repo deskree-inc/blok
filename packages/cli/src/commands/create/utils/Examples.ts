@@ -1,7 +1,7 @@
 const node_file = `
 import ApiCall from "@blok-ts/api-call";
 import IfElse from "@blok-ts/if-else";
-import type { NodeBase } from "@blok-ts/shared";
+import type { NodeBase } from "@blok-ts/runner";
 import ExampleNodes from "./nodes/examples";
 
 const nodes: {
