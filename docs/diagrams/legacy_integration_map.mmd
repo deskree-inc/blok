@@ -1,0 +1,162 @@
+graph TB
+    subgraph "BLOK CORE SYSTEM SACRED"
+        BLOK_HTTP["Blok HTTP Trigger - Port 4000 - Metrics Port 9091"]
+        BLOK_GRPC["Blok gRPC Trigger - Protocol Buffers - High Performance"]
+        BLOK_CLI["blokctl CLI - Project Management - NPM Package"]
+        BLOK_RUNNER["Core Runner - Workflow Engine - Node Orchestration"]
+    end
+
+    subgraph "NPM ECOSYSTEM"
+        NPM_REGISTRY["NPM Registry - npmjs.com - Package Management"]
+        BLOK_PACKAGES["Blok NPM Packages - @blok-ts/runner - @blok-ts/trigger-http - @blok-ts/api-call - @blok-ts/if-else"]
+        THIRD_PARTY["Third-Party Dependencies - Express.js - @connectrpc/connect - OpenTelemetry - Vitest"]
+    end
+
+    subgraph "CONTAINER ECOSYSTEM"
+        DOCKER_HUB["Docker Hub - docker.io - Container Registry"]
+        DOCKER_IMAGES["Blok Container Images - HTTP Trigger Image - gRPC Trigger Image - Python Runtime Image"]
+        ORCHESTRATION["Container Orchestration - Kubernetes - Docker Compose - Multi-Container Deployments"]
+    end
+
+    subgraph "OBSERVABILITY STACK"
+        PROMETHEUS["Prometheus - Metrics Collection - /metrics Endpoint"]
+        OPENTELEMETRY["OpenTelemetry - Distributed Tracing - Performance Monitoring"]
+        GRAFANA["Grafana - Metrics Visualization - Custom Dashboards"]
+        LOGGING["Logging Systems - Structured Logs - Log Aggregation"]
+    end
+
+    subgraph "PYTHON RUNTIME ECOSYSTEM"
+        PYTHON_RUNTIME["Python 3 Runtime - runtimes/python3/ - gRPC Communication"]
+        PYTHON_DEPS["Python Dependencies - grpcio - protobuf - Custom Libraries"]
+        PYPI["PyPI Registry - pypi.org - Python Package Index"]
+    end
+
+    subgraph "EXTERNAL APIS & SERVICES"
+        REST_APIS["REST APIs - External HTTP Services - @blok-ts/api-call Integration"]
+        DATABASES["Database Systems - PostgreSQL - MongoDB - Data Persistence"]
+        CLOUD_SERVICES["Cloud Services - AWS Lambda - Google Cloud Functions - Serverless Deployment"]
+        AUTH_SERVICES["Authentication Services - OAuth Providers - JWT Services - Identity Management"]
+    end
+
+    subgraph "DEVELOPMENT TOOLS"
+        VERSION_CONTROL["Version Control - GitHub - Git Repositories - Community Contributions"]
+        CI_CD["CI/CD Pipelines - GitHub Actions - Automated Deployment - Automated Testing"]
+        IDE_TOOLS["Development IDEs - VS Code - TypeScript Support - Debugging Tools"]
+        TESTING["Testing Infrastructure - Vitest Framework - Automated Testing - Coverage Reports"]
+    end
+
+    subgraph "DEMO & EVENT INFRASTRUCTURE"
+        DEMO_INFRA["Demo Infrastructure - Event Configurations - Temporary Overrides - Live Demonstrations"]
+        MINTLIFY["Mintlify Documentation - Public Documentation - docs.blok.dev - Community Guides"]
+        COMMUNITY_DOCS["Community Resources - README.md - Getting Started - Contribution Guidelines"]
+    end
+
+    %% Core Integration Connections
+    BLOK_CLI -->|publishes to| NPM_REGISTRY
+    BLOK_HTTP -->|publishes to| NPM_REGISTRY
+    BLOK_RUNNER -->|publishes to| NPM_REGISTRY
+    NPM_REGISTRY --> BLOK_PACKAGES
+
+    BLOK_HTTP -->|containerized| DOCKER_HUB
+    BLOK_GRPC -->|containerized| DOCKER_HUB
+    DOCKER_HUB --> DOCKER_IMAGES
+
+    %% Observability Integrations
+    BLOK_HTTP -->|/metrics endpoint| PROMETHEUS
+    BLOK_HTTP -->|traces| OPENTELEMETRY
+    BLOK_GRPC -->|traces| OPENTELEMETRY
+    PROMETHEUS --> GRAFANA
+    OPENTELEMETRY --> LOGGING
+
+    %% Runtime Integrations
+    BLOK_RUNNER -->|gRPC calls| PYTHON_RUNTIME
+    PYTHON_RUNTIME -->|dependencies| PYTHON_DEPS
+    PYTHON_DEPS -->|packages from| PYPI
+
+    %% External Service Integrations
+    BLOK_HTTP -->|node execution| REST_APIS
+    BLOK_HTTP -->|data persistence| DATABASES
+    BLOK_HTTP -->|serverless| CLOUD_SERVICES
+    BLOK_HTTP -->|authentication| AUTH_SERVICES
+
+    %% Development Tool Integrations
+    BLOK_CLI -->|source code| VERSION_CONTROL
+    VERSION_CONTROL -->|triggers| CI_CD
+    CI_CD -->|deployment| DOCKER_HUB
+    CI_CD -->|testing| TESTING
+    VERSION_CONTROL -->|development| IDE_TOOLS
+
+    %% Third-Party Dependencies
+    BLOK_HTTP -->|depends on| THIRD_PARTY
+    BLOK_GRPC -->|depends on| THIRD_PARTY
+    BLOK_RUNNER -->|depends on| THIRD_PARTY
+    THIRD_PARTY -->|installed from| NPM_REGISTRY
+
+    %% Demo and Documentation
+    DEMO_INFRA -->|overrides| DOCKER_IMAGES
+    DEMO_INFRA -->|deployed via| ORCHESTRATION
+    MINTLIFY -->|hosts| COMMUNITY_DOCS
+    VERSION_CONTROL -->|publishes to| MINTLIFY
+
+    %% Container Orchestration
+    ORCHESTRATION -->|pulls from| DOCKER_HUB
+    ORCHESTRATION -->|scales| BLOK_HTTP
+    ORCHESTRATION -->|scales| BLOK_GRPC
+
+    %% Built-in CLI Tools
+    subgraph "CLI MONITORING TOOLS"
+        CLI_MONITOR_CMD["blokctl monitor - Terminal Dashboard - Real-time Metrics"]
+        CLI_MONITOR_WEB["blokctl monitor --web - Web Dashboard - Browser UI"]
+        CLI_MONITOR_REMOTE["blokctl monitor --host - Remote Prometheus - Production Monitoring"]
+        CLI_DEV_SERVER["blokctl dev - Development Server - Hot Reload and Testing"]
+    end
+
+    CLI_MONITOR_CMD -->|queries| PROMETHEUS
+    CLI_MONITOR_WEB -->|web interface| PROMETHEUS
+    CLI_MONITOR_REMOTE -->|remote connection| PROMETHEUS
+    CLI_DEV_SERVER -->|starts| BLOK_HTTP
+
+    %% Security Integration
+    subgraph "SECURITY INTEGRATIONS"
+        TLS_CERTS["TLS Certificates - HTTPS/TLS - Certificate Management - Auto-Renewal"]
+        SECRETS["Secret Management - Environment Variables - Secure Storage - Access Control"]
+        FIREWALL["Network Security - Firewall Rules - VPC Configuration - Traffic Control"]
+        AUDIT["Audit Logging - Security Events - Compliance Tracking - Security Metrics"]
+    end
+
+    BLOK_HTTP --> TLS_CERTS
+    BLOK_GRPC --> TLS_CERTS
+    CLOUD_SERVICES --> SECRETS
+    ORCHESTRATION --> FIREWALL
+    LOGGING --> AUDIT
+
+    %% Performance Integration
+    subgraph "PERFORMANCE INTEGRATIONS"
+        CDN["Content Delivery Network - Global Distribution - Static Asset Caching - Edge Computing"]
+        LOAD_BALANCER["Load Balancers - Traffic Distribution - Health Checks - Auto-scaling"]
+        CACHE["Caching Systems - Redis/Memcached - Session Storage - Performance Boost"]
+        MONITORING["Performance Monitoring - APM Tools - Real-time Metrics - Alerting"]
+    end
+
+    CLOUD_SERVICES --> CDN
+    ORCHESTRATION --> LOAD_BALANCER
+    DATABASES --> CACHE
+    PROMETHEUS --> MONITORING
+
+    %% Styling
+    classDef sacred fill:#ffebee,stroke:#c62828,stroke-width:3px,color:#000000
+    classDef npm fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#000000
+    classDef container fill:#e8f5e8,stroke:#388e3c,stroke-width:2px,color:#000000
+    classDef observability fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#000000
+    classDef external fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#000000
+    classDef tools fill:#fce4ec,stroke:#c2185b,stroke-width:2px,color:#000000
+    classDef security fill:#f1f8e9,stroke:#558b2f,stroke-width:2px,color:#000000
+
+    class BLOK_HTTP,BLOK_GRPC,BLOK_CLI,BLOK_RUNNER sacred;
+    class NPM_REGISTRY,BLOK_PACKAGES,THIRD_PARTY,PYPI,PYTHON_DEPS npm;
+    class DOCKER_HUB,DOCKER_IMAGES,ORCHESTRATION container;
+    class PROMETHEUS,OPENTELEMETRY,GRAFANA,LOGGING observability;
+    class REST_APIS,DATABASES,CLOUD_SERVICES,AUTH_SERVICES external;
+    class VERSION_CONTROL,CI_CD,IDE_TOOLS,TESTING,DEMO_INFRA,MINTLIFY,COMMUNITY_DOCS tools;
+    class CLI_MONITOR_CMD,CLI_MONITOR_WEB,CLI_MONITOR_REMOTE,CLI_DEV_SERVER tools;
+    class TLS_CERTS,SECRETS,FIREWALL,AUDIT,CDN,LOAD_BALANCER,CACHE,MONITORING security; 

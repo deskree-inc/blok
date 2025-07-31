@@ -47,6 +47,7 @@
       </ul>
     </li>
     <li><a href="#running-workflows">Running Workflows</a></li>
+    <li><a href="#monitoring--cli-tools">Monitoring & CLI Tools</a></li>
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
@@ -114,6 +115,41 @@ To run the created workflow locally:
 2. Use tools like POSTMAN, curl, or any HTTP client to test workflows at `http://localhost:4000/{workflow-name}`
 
 _For more examples, please refer to the [Executing Workflows](https://blok.build/docs/d/core-concepts/executing-workflows)_
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Monitoring & CLI Tools
+
+Blok includes powerful built-in monitoring and development tools via the `blokctl` CLI:
+
+### **Real-time Monitoring**
+```bash
+# Terminal dashboard with live metrics
+blokctl monitor
+
+# Web-based dashboard (opens in browser)
+blokctl monitor --web
+
+# Remote Prometheus monitoring for production
+blokctl monitor --host http://your-prometheus-server:9090 --token your-token
+```
+
+### **Available Metrics**
+The monitoring dashboard shows:
+- **Workflow Requests**: Total requests per workflow
+- **Execution Time**: Average response time per workflow  
+- **Error Rates**: Failed executions and error counts
+- **Resource Usage**: CPU and memory consumption
+- **Node Performance**: Individual node execution metrics
+
+### **Health Checks**
+```bash
+# Application health
+curl http://localhost:4000/health-check
+
+# Prometheus metrics endpoint
+curl http://localhost:9091/metrics
+```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

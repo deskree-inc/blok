@@ -1,0 +1,106 @@
+graph TB
+    subgraph "SACRED_PRODUCTION Systems"
+        CLI["blokctl CLI - Published NPM Package - Community Development Tool"]
+        CORE["Core Runner - @blok-ts/runner v0.1.26 - Published NPM Package - Workflow Engine"]
+        HTTP["HTTP Trigger - @blok-ts/trigger-http v0.0.34 - Published NPM Package - Port 4000, 9091"]
+        GRPC["gRPC Trigger - Protocol Buffers - High Performance"]
+        NPM1["@blok-ts/api-call - Global NPM Node - HTTP Client"]
+        NPM2["@blok-ts/if-else - Global NPM Node - Conditional Logic"]
+    end
+
+    subgraph "PROTECTED Enhancement Areas"
+        DOCS["Documentation - blok.md + Community Docs - 3900+ lines AI docs"]
+        WORKFLOWS["Example Workflows - JSON/YAML/TOML - Demo and Learning"]
+        NODES["Local Nodes - Semantic Versioning - node@version"]
+        TEMPLATES["CLI Templates - Project Scaffolding - Boilerplate"]
+    end
+
+    subgraph "SAFE Extension Areas"
+        MCP["MCP Trigger - Broken/Incomplete - External Wrapper Safe"]
+        INFRA["Demo Infrastructure - Docker Configs - Event Overrides"]
+    end
+
+    subgraph "Built-in CLI Tools"
+        CLI_MONITOR["blokctl monitor - Real-time Metrics Dashboard - Web and Terminal UI"]
+        CLI_DEV["blokctl dev - Development Server - Hot Reload"]
+        CLI_BUILD["blokctl build - Production Build - TypeScript Compilation"]
+        CLI_TEST["npm run test - Unit Testing - Vitest Framework"]
+    end
+
+    subgraph "Runtime Environments"
+        PYTHON["Python Runtime - runtimes/python3/ - gRPC Communication"]
+        NODE["Node.js Runtime - TypeScript Execution - Primary Runtime"]
+    end
+
+    subgraph "External Dependencies"
+        NPM_REG["NPM Registry - Package Distribution - npmjs.com"]
+        DOCKER_HUB["Docker Hub - Container Images - docker.io"]
+        PROM["Prometheus - Metrics Collection - External Monitoring"]
+    end
+
+    %% Core Connections (SACRED)
+    CLI -->|create project/node/workflow| TEMPLATES
+    CLI -->|generates| HTTP
+    CLI -->|scaffolds| WORKFLOWS
+    
+    HTTP -->|loads| CORE
+    HTTP -->|registers| NPM1
+    HTTP -->|registers| NPM2
+    HTTP -->|discovers| NODES
+    HTTP -->|executes| WORKFLOWS
+    HTTP -->|metrics port 9091| PROM
+    
+    GRPC -->|loads| CORE
+    GRPC -->|protocol buffers| PYTHON
+    
+    CORE -->|runtime.python3| PYTHON
+    CORE -->|module types| NODE
+    CORE -->|local discovery| NODES
+    
+    %% Built-in CLI Tool Connections
+    CLI_MONITOR -->|queries /metrics| HTTP
+    CLI_MONITOR -->|Prometheus queries| PROM
+    CLI_DEV -->|starts dev server| HTTP
+    CLI_BUILD -->|compiles| CORE
+    CLI_TEST -->|tests| NODES
+    
+    %% Distribution Connections
+    CLI -->|publishes to| NPM_REG
+    NPM1 -->|published to| NPM_REG
+    NPM2 -->|published to| NPM_REG
+    CORE -->|published to| NPM_REG
+    HTTP -->|published to| NPM_REG
+    
+    HTTP -->|containerized| DOCKER_HUB
+    GRPC -->|containerized| DOCKER_HUB
+    
+    %% Production Classification Styling
+    classDef sacred fill:#ffebee,stroke:#c62828,stroke-width:3px,color:#000000
+    classDef protected fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#000000
+    classDef safe fill:#e8f5e8,stroke:#388e3c,stroke-width:2px,color:#000000
+    classDef external fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#000000
+    classDef dependency fill:#f3e5f5,stroke:#7b1fa2,stroke-width:1px,color:#000000
+    
+    class CLI,CORE,HTTP,GRPC,NPM1,NPM2 sacred;
+    class DOCS,WORKFLOWS,NODES,TEMPLATES protected;
+    class MCP,INFRA safe;
+    class CLI_MONITOR,CLI_DEV,CLI_BUILD,CLI_TEST external;
+    class NPM_REG,DOCKER_HUB,PROM,PYTHON,NODE dependency;
+
+    %% Port and Service Information
+    HTTP -.->|Port 4000| HTTP
+    HTTP -.->|Metrics 9091| PROM
+    GRPC -.->|gRPC Protocol| GRPC
+    
+    %% Legend
+    subgraph "Protection Levels"
+        LEG1["SACRED: Zero modifications allowed"]
+        LEG2["PROTECTED: Careful enhancement only"]
+        LEG3["SAFE: External extension allowed"]
+        LEG4["CLI TOOLS: Built-in development and monitoring tools"]
+    end
+    
+    class LEG1 sacred;
+    class LEG2 protected;
+    class LEG3 safe;
+    class LEG4 external; 

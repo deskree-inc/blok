@@ -1,0 +1,151 @@
+graph TD
+    subgraph "Entry Points SACRED"
+        HTTP_REQ["HTTP Request - GET/POST/PUT/DELETE - Port 4000"]
+        GRPC_REQ["gRPC Request - Protocol Buffers - High Performance"]
+        REMOTE_NODE["Remote Node Execution - x-nanoservice-execute-node - Base64 + JSON"]
+    end
+
+    subgraph "Request Processing SACRED"
+        ROUTE_MATCH["Route Matching - Path + Method Validation - Workflow Selection"]
+        MSG_DECODE["Message Decode - Base64 to JSON - WorkflowRequest"]
+        CTX_CREATE["Context Creation - ctx Object - Request ID + Metadata"]
+    end
+
+    subgraph "Workflow Engine SACRED"
+        WF_LOAD["Workflow Loading - JSON/YAML/TOML/TypeScript - File/Registry Discovery"]
+        WF_PARSE["Workflow Parsing - Steps + Trigger + Nodes - Schema Validation"]
+        WF_INIT["Workflow Initialization - Configuration Setup - Dependency Resolution"]
+    end
+
+    subgraph "Node Resolution SACRED"
+        NODE_TYPE{Node Type?}
+        NODE_MODULE["Module Nodes - Nodes.ts Registry - NPM Packages"]
+        NODE_LOCAL["Local Nodes - NODES_PATH Discovery - Semantic Versioning"]
+        NODE_PYTHON["Python Nodes - gRPC Communication - Cross-Runtime"]
+    end
+
+    subgraph "Context Processing SACRED"
+        CTX_INTER["Context Interpolation - expression Resolution - String Templates"]
+        JS_EVAL["JavaScript Evaluation - js/expression Execution - Controlled Environment"]
+        VAR_MAP["Variable Mapping - ctx.vars, ctx.func - Data Transformation"]
+    end
+
+    subgraph "Step Execution SACRED"
+        STEP_SEQ["Sequential Execution - Steps Array Processing - Performance Tracking"]
+        NODE_EXEC["Node Execution - Business Logic - Input to Output"]
+        COND_FLOW["Conditional Flow - If-Else Logic - JavaScript Conditions"]
+    end
+
+    subgraph "Data Transformation SACRED"
+        INPUT_MAP["Input Mapping - Workflow.nodes Config - Parameter Binding"]
+        OUTPUT_PROC["Output Processing - Response Data - Context Updates"]
+        ERR_HANDLE["Error Handling - GlobalError System - Structured Errors"]
+    end
+
+    subgraph "Observability SACRED"
+        METRICS["Metrics Collection - OpenTelemetry - Performance Data"]
+        TRACING["Distributed Tracing - Span Creation - Execution Context"]
+        LOGGING["Structured Logging - Context + Events - Debug Information"]
+    end
+
+    subgraph "Response Generation SACRED"
+        RESP_FORMAT["Response Formatting - Content-Type Detection - JSON/Text/Binary"]
+        RESP_SEND["Response Transmission - HTTP Response - Status Codes"]
+        CLEANUP["Resource Cleanup - Memory Management - Metrics Finalization"]
+    end
+
+    %% Main Data Flow
+    HTTP_REQ --> ROUTE_MATCH
+    GRPC_REQ --> ROUTE_MATCH
+    REMOTE_NODE --> MSG_DECODE
+    MSG_DECODE --> CTX_CREATE
+    ROUTE_MATCH --> CTX_CREATE
+
+    CTX_CREATE --> WF_LOAD
+    WF_LOAD --> WF_PARSE
+    WF_PARSE --> WF_INIT
+
+    WF_INIT --> NODE_TYPE
+    NODE_TYPE -->|type: module| NODE_MODULE
+    NODE_TYPE -->|type: local| NODE_LOCAL
+    NODE_TYPE -->|type: runtime.python3| NODE_PYTHON
+
+    NODE_MODULE --> CTX_INTER
+    NODE_LOCAL --> CTX_INTER
+    NODE_PYTHON --> CTX_INTER
+
+    CTX_INTER --> JS_EVAL
+    JS_EVAL --> VAR_MAP
+    VAR_MAP --> INPUT_MAP
+
+    INPUT_MAP --> STEP_SEQ
+    STEP_SEQ --> NODE_EXEC
+    NODE_EXEC --> COND_FLOW
+    COND_FLOW --> OUTPUT_PROC
+
+    OUTPUT_PROC --> RESP_FORMAT
+    RESP_FORMAT --> RESP_SEND
+    RESP_SEND --> CLEANUP
+
+    %% Error Flow
+    NODE_EXEC -.->|errors| ERR_HANDLE
+    COND_FLOW -.->|errors| ERR_HANDLE
+    ERR_HANDLE -.-> RESP_FORMAT
+
+    %% Observability Flow
+    CTX_CREATE --> METRICS
+    STEP_SEQ --> TRACING
+    NODE_EXEC --> LOGGING
+    RESP_SEND --> METRICS
+
+    %% Conditional and Loop Flow
+    COND_FLOW -.->|loop back| STEP_SEQ
+    OUTPUT_PROC -.->|context update| CTX_INTER
+
+    %% Data Context Flow (Critical)
+    subgraph "Context Data Flow"
+        CTX_REQ["ctx.request - HTTP Request Data - Body, Query, Headers"]
+        CTX_RESP["ctx.response - Accumulated Response - Data Chain"]
+        CTX_VARS["ctx.vars - Workflow Variables - State Management"]
+        CTX_LOGGER["ctx.logger - Logging Interface - Contextual Logs"]
+    end
+
+    CTX_CREATE --> CTX_REQ
+    CTX_REQ --> CTX_INTER
+    OUTPUT_PROC --> CTX_RESP
+    VAR_MAP --> CTX_VARS
+    LOGGING --> CTX_LOGGER
+
+    %% Performance and Metrics Data
+    subgraph "Performance Data"
+        PERF_MEM["Memory Usage - Heap Tracking - Min/Max/Average"]
+        PERF_CPU["CPU Metrics - Usage Percentage - Process Monitoring"]
+        PERF_TIME["Execution Time - Step Duration - Total Workflow Time"]
+    end
+
+    METRICS --> PERF_MEM
+    METRICS --> PERF_CPU
+    TRACING --> PERF_TIME
+
+    %% External Integration Data Flow
+    subgraph "External Data Sources"
+        API_CALLS["External APIs - HTTP Clients - @blok-ts/api-call"]
+        DB_CONN["Database Connections - PostgreSQL/MongoDB - Data Persistence"]
+        FILE_SYS["File System - Node Discovery - Workflow Loading"]
+    end
+
+    NODE_EXEC --> API_CALLS
+    NODE_EXEC --> DB_CONN
+    NODE_LOCAL --> FILE_SYS
+    WF_LOAD --> FILE_SYS
+
+    %% Styling
+    classDef sacred fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#000000
+    classDef processing fill:#e8f5e8,stroke:#388e3c,stroke-width:2px,color:#000000
+    classDef data fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#000000
+    classDef external fill:#f3e5f5,stroke:#7b1fa2,stroke-width:1px,color:#000000
+
+    class HTTP_REQ,GRPC_REQ,REMOTE_NODE,ROUTE_MATCH,MSG_DECODE,WF_LOAD,WF_PARSE,NODE_MODULE,NODE_LOCAL,NODE_PYTHON,STEP_SEQ,NODE_EXEC,RESP_SEND sacred;
+    class CTX_CREATE,CTX_INTER,JS_EVAL,VAR_MAP,INPUT_MAP,OUTPUT_PROC,COND_FLOW processing;
+    class CTX_REQ,CTX_RESP,CTX_VARS,CTX_LOGGER,PERF_MEM,PERF_CPU,PERF_TIME data;
+    class API_CALLS,DB_CONN,FILE_SYS,METRICS,TRACING,LOGGING external; 
