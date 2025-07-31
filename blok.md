@@ -507,7 +507,20 @@ export default class UserValidator extends NodeBlok<UserValidatorInputs> {
 
 ### **Concept 3: Dynamic Context System**
 **Similar to**: Handlebars/Mustache templating + JavaScript eval functionality  
-**How it works**: Two-syntax system for dynamic property injection in workflows
+**How it works**: **Stateless injection/return pattern** with direct memory access for maximum performance
+
+#### **Context Flow Architecture**
+```
+Runner → injects context → Node → modifies context → returns context → Runner
+         ↓ Next Step ↓
+Runner → passes updated context → Next Node → modifies → returns → Runner
+```
+
+**Key Performance Insights**:
+- **Direct Memory Access**: Context expressions work on JavaScript objects in memory, not string parsing
+- **Zero Parsing Overhead**: `${}` and `js/` evaluate native JavaScript objects directly  
+- **Stateless Design**: Each node receives complete context, processes, and returns modified version
+- **Remote Consistency**: Context serialization via BASE64 maintains identical behavior for remote nodes
 
 **Code example**:
 ```json
@@ -515,11 +528,12 @@ export default class UserValidator extends NodeBlok<UserValidatorInputs> {
   "nodes": {
     "example-context-usage": {
       "inputs": {
-        // String interpolation - returns strings only
+        // String interpolation - Direct memory access (strings only)
         "user_id": "${ctx.request.body.id}",
         "greeting": "Hello ${ctx.request.body.name}!",
+        "deep_nested": "${ctx.request.body.user.profile.settings.theme}",
         
-        // JavaScript execution - returns any type
+        // JavaScript execution - Full object manipulation (any type)
         "user_data": "js/ctx.request.body",
         "formatted_date": "js/new Date().toISOString()",
         "conditional_value": "js/ctx.request.body.premium ? 'premium_user' : 'regular_user'",
@@ -527,14 +541,21 @@ export default class UserValidator extends NodeBlok<UserValidatorInputs> {
         "validated_json": "js/JSON.parse(ctx.request.body.config || '{}')",
         "safe_access": "js/ctx.vars['previous-step']?.data?.results || []",
         
-        // Complex logic examples
+        // Complex logic with native JavaScript performance
         "calculated_discount": "js/ctx.request.body.age > 65 ? 0.1 : (ctx.request.body.student ? 0.05 : 0)",
-        "environment_config": "js/process.env.NODE_ENV === 'production' ? ctx.config.prod : ctx.config.dev"
+        "environment_config": "js/process.env.NODE_ENV === 'production' ? ctx.config.prod : ctx.config.dev",
+        "complex_transformation": "js/ctx.data.results.filter(r => r.status === 'active').map(r => ({ id: r.id, score: r.metrics.performance * 0.8 }))"
       }
     }
   }
 }
 ```
+
+#### **Context Memory Efficiency**
+- **No String Parsing**: Context evaluation uses direct JavaScript object access
+- **Native Performance**: Nested object access has standard JavaScript performance
+- **Memory Safe**: Objects remain in memory during workflow execution
+- **Type Preservation**: `js/` expressions return actual JavaScript types (objects, arrays, primitives)
 
 ---
 
@@ -1187,7 +1208,34 @@ export default userManagementWorkflow;
 
 ### **Task 7: Error Handling and Recovery Patterns**
 **Equivalent to**: Try-catch blocks with circuit breakers and retry logic  
-**When to use**: Building resilient workflows that handle failures gracefully  
+**When to use**: Building resilient workflows that handle failures gracefully
+
+#### **Core Error Handling Architecture**
+Blok uses a **fail-fast architecture** for predictable and debuggable error handling:
+
+```
+Node.execute() → throws error → Workflow terminates → HTTP 500 + JSON details
+```
+
+**Key Error Handling Principles**:
+- **Fail-Fast**: Single node failure terminates entire workflow immediately
+- **No Automatic Recovery**: No built-in retry mechanisms or error recovery
+- **Structured Responses**: HTTP 500 status code with detailed JSON error information
+- **Clean State**: Failed workflows don't leave partial state changes
+- **Debugging Friendly**: Clear error propagation with node identification
+
+**Basic Error Response Format**:
+```json
+{
+  "error": {
+    "message": "API call failed: Connection timeout",
+    "code": 500,
+    "name": "ApiClient",
+    "step": "external-api-call",
+    "timestamp": "2024-01-15T10:30:00Z"
+  }
+}
+```  
 
 **Implementation**:
 ```json

@@ -44,8 +44,15 @@ HTTP/gRPC Request → Workflow Selection → Node Execution → Response
 ### **Data Flow Patterns**
 1. **Request Processing**: HTTP/gRPC → Route matching → Context creation
 2. **Workflow Execution**: Workflow loading → Node resolution → Step execution
-3. **Context Management**: Dynamic variable interpolation with `${expression}` and `js/expression`
-4. **Response Generation**: Output processing → Format detection → HTTP response
+3. **Context Management**: Stateless injection/return pattern with direct memory access
+4. **Error Handling**: Fail-fast architecture → Single node failure terminates workflow
+5. **Response Generation**: Output processing → Format detection → HTTP response
+
+### **Advanced Technical Insights**
+- **Context Performance**: Direct JavaScript object access, zero string parsing overhead
+- **Memory Model**: Context flows through Runner → Node → Runner pattern
+- **Error Architecture**: HTTP 500 + JSON details for predictable debugging
+- **Remote Consistency**: BASE64 serialization maintains behavior across local/remote nodes
 
 ### **Node Types & Loading Mechanisms**
 - **`type: "module"`**: Explicitly registered in `Nodes.ts`, supports NPM packages

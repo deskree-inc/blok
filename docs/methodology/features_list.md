@@ -57,15 +57,45 @@
 - "Can I use JavaScript expressions to transform data in workflows?"
 - "What context variables are available during workflow execution?"
 
+**Advanced Technical Insights**:
+- **Architecture**: Stateless injection/return pattern (Runner → Node → Runner)
+- **Performance**: Direct memory access, zero string parsing overhead  
+- **Memory Model**: JavaScript objects remain in memory during workflow execution
+- **Remote Consistency**: Context serialization via BASE64 maintains identical behavior
+
 **Implementation Summary**:
 - **Context Types**: String interpolation (${expression}), JavaScript execution (js/expression)
 - **Data Flow**: ctx.request, ctx.response, ctx.vars, ctx.logger (EXISTING - SACRED)
 - **Security**: Controlled JavaScript execution environment (EXISTING - SACRED)
-- **Performance**: <50ms context evaluation and data transformation
+- **Performance**: Native JavaScript performance for nested object access
 
 ---
 
-### **FEATURE_004: CLI-based Project Management**
+### **FEATURE_004: Fail-Fast Error Handling**
+**Technical Stack**: GlobalError class + HTTP status codes + JSON error responses  
+**Business Value**: Predictable error behavior and debugging-friendly failure modes  
+**Effort**: Backend(EXISTING), Logic(EXISTING)  
+**Dependencies**: core/runner error handling, HTTP trigger response formatting  
+**Business Queries**:
+- "What happens when a node fails during workflow execution?"
+- "How are errors reported to client applications?"
+- "Can I get detailed error information for debugging?"
+
+**Technical Architecture**:
+- **Fail-Fast Pattern**: Single node failure terminates entire workflow immediately
+- **Error Propagation**: Node.execute() throws → Workflow stops → HTTP 500 + JSON details
+- **Clean State**: No partial state changes remain after failures
+- **Structured Responses**: Standardized error format with node identification
+
+**Implementation Summary**:
+- **Error Flow**: Node failure → GlobalError → HTTP 500 + JSON response
+- **Error Format**: { message, code, name, step, timestamp } (EXISTING - SACRED)
+- **Debugging**: Clear error propagation with node and step identification (EXISTING - SACRED)
+- **No Recovery**: No automatic retry mechanisms or error recovery (intentional design)
+
+---
+
+### **FEATURE_005: CLI-based Project Management**
 **Technical Stack**: Node.js + Commander.js + Interactive prompts  
 **Business Value**: Streamlines project creation and development workflow  
 **Effort**: CLI(EXISTING), Templates(EXISTING)  
@@ -85,7 +115,7 @@
 
 ## **🌐 HTTP TRIGGER FEATURES**
 
-### **FEATURE_005: Express.js HTTP Trigger System**
+### **FEATURE_006: Express.js HTTP Trigger System**
 **Technical Stack**: Express.js + CORS + Body Parser + OpenTelemetry  
 **Business Value**: Provides production-ready HTTP server for workflow execution  
 **Effort**: Backend(EXISTING), API(EXISTING), Monitoring(EXISTING)  
@@ -104,7 +134,7 @@
 
 ---
 
-### **FEATURE_006: Remote Node Execution Protocol**
+### **FEATURE_007: Remote Node Execution Protocol**
 **Technical Stack**: HTTP POST + Base64 encoding + Special headers  
 **Business Value**: Enables external systems to execute individual nodes remotely  
 **Effort**: Backend(EXISTING), Protocol(EXISTING), SDK(EXISTING)  
@@ -124,7 +154,7 @@
 
 ## **⚙️ gRPC TRIGGER FEATURES**
 
-### **FEATURE_007: gRPC Communication System**
+### **FEATURE_008: gRPC Communication System**
 **Technical Stack**: gRPC + Protocol Buffers + Connect RPC  
 **Business Value**: High-performance inter-service communication for enterprise environments  
 **Effort**: Backend(EXISTING), Protocol(EXISTING)  
@@ -144,7 +174,7 @@
 
 ## **📦 NPM ECOSYSTEM FEATURES**
 
-### **FEATURE_008: Global NPM Node Library**
+### **FEATURE_009: Global NPM Node Library**
 **Technical Stack**: NPM packages + TypeScript + Semantic versioning  
 **Business Value**: Reusable, tested nodes available across all Blok projects  
 **Effort**: NPM(EXISTING), Distribution(EXISTING)  
@@ -162,7 +192,7 @@
 
 ---
 
-### **FEATURE_009: Monorepo Development Environment**
+### **FEATURE_010: Monorepo Development Environment**
 **Technical Stack**: PNPM workspaces + TypeScript + Shared dependencies  
 **Business Value**: Coordinated development across multiple packages and triggers  
 **Effort**: DevOps(EXISTING), Build(EXISTING)  
@@ -182,7 +212,7 @@
 
 ## **🐳 CONTAINERIZATION FEATURES**
 
-### **FEATURE_010: Docker Development Environment**
+### **FEATURE_011: Docker Development Environment**
 **Technical Stack**: Docker + Multi-stage builds + Development containers  
 **Business Value**: Consistent development and deployment environments  
 **Effort**: DevOps(EXISTING), Container(EXISTING)  
@@ -202,7 +232,7 @@
 
 ## **📊 OBSERVABILITY FEATURES**
 
-### **FEATURE_011: Integrated Monitoring & Metrics**
+### **FEATURE_012: Integrated Monitoring & Metrics**
 **Technical Stack**: OpenTelemetry + Prometheus + Performance tracking  
 **Business Value**: Production-ready observability without additional setup  
 **Effort**: Backend(EXISTING), Monitoring(EXISTING)  
@@ -222,7 +252,7 @@
 
 ## **📝 WORKFLOW DEFINITION FEATURES**
 
-### **FEATURE_012: Multi-Format Workflow Support**
+### **FEATURE_013: Multi-Format Workflow Support**
 **Technical Stack**: JSON + YAML + TOML + TypeScript helpers  
 **Business Value**: Flexible workflow definition to match team preferences and tooling  
 **Effort**: Parser(EXISTING), Validation(EXISTING)  
@@ -242,7 +272,7 @@
 
 ## **🔧 EXTENSIBILITY FEATURES**
 
-### **FEATURE_013: Local Node Discovery System**
+### **FEATURE_014: Local Node Discovery System**
 **Technical Stack**: Filesystem scanning + Dynamic imports + Semantic versioning  
 **Business Value**: Easy node development and deployment without registry management  
 **Effort**: Backend(EXISTING), Discovery(EXISTING)  
@@ -260,7 +290,7 @@
 
 ---
 
-### **FEATURE_014: Plugin Architecture System**
+### **FEATURE_015: Plugin Architecture System**
 **Technical Stack**: Module registration + Dependency injection + Interface definitions  
 **Business Value**: Extensible framework supporting community contributions  
 **Effort**: Architecture(EXISTING), Registry(EXISTING)  
@@ -280,7 +310,7 @@
 
 ## **🎨 DEVELOPER EXPERIENCE FEATURES**
 
-### **FEATURE_015: Interactive Development Tools**
+### **FEATURE_016: Interactive Development Tools**
 **Technical Stack**: Node.js CLI + Interactive prompts + Template generation  
 **Business Value**: Reduced development time and learning curve for new users  
 **Effort**: CLI(EXISTING), Templates(EXISTING), Documentation(EXISTING)  
@@ -300,7 +330,7 @@
 
 ## **🚀 DEPLOYMENT FEATURES**
 
-### **FEATURE_016: Multi-Environment Deployment**
+### **FEATURE_017: Multi-Environment Deployment**
 **Technical Stack**: Environment variables + Docker + Infrastructure as Code  
 **Business Value**: Consistent deployment across development, staging, and production  
 **Effort**: DevOps(EXISTING), Configuration(EXISTING)  
