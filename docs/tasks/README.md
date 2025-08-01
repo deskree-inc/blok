@@ -93,11 +93,11 @@ All MCP methodology enhancements focus on **Documentation Enhancement**:
 ## 📊 **CURRENT PROJECT STATUS**
 
 ### **Task Management Overview**
-- **Total Tasks**: 9 (Complete platform transformation roadmap)
-- **OPEN**: 9 tasks (systematic full-stack enhancements ready for implementation)
-- **IN_PROGRESS**: 0 tasks (no active development)
+- **Total Tasks**: 10 (Complete platform transformation roadmap + critical publication blocker)
+- **OPEN**: 10 tasks (1 CRITICAL BLOCKER + 9 strategic enhancements)
+- **IN_PROGRESS**: 0 tasks (no active development - BLOCKED until TASK-000 completion)
 - **DONE**: 0 tasks (comprehensive strategic roadmap established)
-- **Overall Progress**: **COMPLETE STRATEGIC ROADMAP** - 9-track platform evolution ready for implementation
+- **Overall Progress**: 🚨 **CRITICAL PUBLICATION BLOCKER** - TASK-000 must complete before all development
 
 ### **Production Readiness**
 - ✅ **HTTP Trigger**: Production-ready with observability
@@ -107,7 +107,10 @@ All MCP methodology enhancements focus on **Documentation Enhancement**:
 - ❌ **MCP Trigger**: Broken/incomplete, needs external wrapper
 
 ### **Current Development Focus**
-🎯 **Active Priority**: Comprehensive platform transformation (9-track strategic evolution)
+🚨 **CRITICAL BLOCKER**: NPM Publication Cleanup (P0-CRITICAL - BLOCKS ALL DEVELOPMENT)
+- **TASK-000**: Remove Nanoservice-TS References for Professional Publication
+
+🎯 **Strategic Evolution** (BLOCKED until TASK-000 completion):
 - **TASK-001**: CLI Non-Interactive Mode for AI Programming Automation
 - **TASK-002**: Python3 Runtime Migration for Multi-Language AI Programming  
 - **TASK-003**: Multi-Platform SDK Ecosystem for Universal Community Access
@@ -122,18 +125,58 @@ All MCP methodology enhancements focus on **Documentation Enhancement**:
 
 ## 🔥 **IMMEDIATE NEXT STEPS (OPEN - Top Priority)**
 
-### **Ready for Assignment**
+### **🚨 CRITICAL BLOCKER (Must Complete First)**
 | Task ID | Component | Priority | Dependencies | Effort | Why Important |
 |---------|-----------|----------|--------------|--------|---------------|
-| TASK-001 | CLI Non-Interactive Mode | P1-High | None | M (2d) | **CRITICAL**: Enables AI programming automation for blokctl create commands |
-| TASK-002 | Python3 Runtime Migration | P1-High | None | L (3d) | **CRITICAL**: Unlocks multi-runtime AI programming with ML/AI libraries |
-| TASK-003 | Multi-Platform SDK Ecosystem | P1-High | None | XL (7d) | **STRATEGIC**: Enables community adoption from any tech stack |
-| TASK-004 | Express.js → Hono Migration | P1-High | None | M (2d) | **PERFORMANCE**: Edge deployment capabilities for global scale |
-| TASK-005 | MCP Server Development | P1-High | None | M (2d) | **ENTERPRISE**: Claude Desktop integration for digital transformation |
-| TASK-006 | Context Persistence System | P1-High | None | L (3d) | **DATA PIPELINES**: Advanced state management for complex workflows |
-| TASK-007 | Parallel Execution Nodes | P1-High | None | M (2d) | **PERFORMANCE**: High-performance data processing with Promise.all pattern |
-| TASK-008 | Manual Trigger CLI | P1-High | None | M (2d) | **DEVELOPMENT**: CLI-based workflow testing for rapid iteration |
-| TASK-009 | HTTP Middleware Package | P1-High | TASK-004 | M (2d) | **INTEGRATION**: Express.js/Hono integration for existing apps |
+| TASK-000 | NPM Publication Cleanup | P0-CRITICAL | None | S (4h) | **BLOCKS ALL**: Remove nanoservice-ts references for professional NPM publication |
+
+### **Ready for Assignment (BLOCKED until TASK-000)**
+| Task ID | Component | Priority | Dependencies | Effort | Why Important |
+|---------|-----------|----------|--------------|--------|---------------|
+| TASK-001 | CLI Non-Interactive Mode | P1-High | TASK-000 | M (2d) | **CRITICAL**: Enables AI programming automation for blokctl create commands |
+| TASK-002 | Python3 Runtime Migration | P1-High | TASK-000 | L (3d) | **CRITICAL**: Unlocks multi-runtime AI programming with ML/AI libraries |
+| TASK-003 | Multi-Platform SDK Ecosystem | P1-High | TASK-000 | XL (7d) | **STRATEGIC**: Enables community adoption from any tech stack |
+| TASK-004 | Express.js → Hono Migration | P1-High | TASK-000 | M (2d) | **PERFORMANCE**: Edge deployment capabilities for global scale |
+| TASK-005 | MCP Server Development | P1-High | TASK-000 | M (2d) | **ENTERPRISE**: Claude Desktop integration for digital transformation |
+| TASK-006 | Context Persistence System | P1-High | TASK-000 | L (3d) | **DATA PIPELINES**: Advanced state management for complex workflows |
+| TASK-007 | Parallel Execution Nodes | P1-High | TASK-000 | M (2d) | **PERFORMANCE**: High-performance data processing with Promise.all pattern |
+| TASK-008 | Manual Trigger CLI | P1-High | TASK-000 | M (2d) | **DEVELOPMENT**: CLI-based workflow testing for rapid iteration |
+| TASK-009 | HTTP Middleware Package | P1-High | TASK-000, TASK-004 | M (2d) | **INTEGRATION**: Express.js/Hono integration for existing apps |
+
+### **🚨 TASK-000 Details: NPM Publication Cleanup (CRITICAL BLOCKER)**
+**Objective**: Remove all legacy "nanoservice-ts" references and prepare professional @blok-ts NPM publication
+
+**Critical Discovery**: **ZERO @blok-ts packages are published on NPM** and contain legacy metadata that will cause:
+- Professional embarrassment with "nanoservice" references in public NPM listings
+- Community confusion between nanoservice-ts and blok-ts branding  
+- Broken repository links and incorrect keywords preventing package discovery
+
+**Key Benefits**:
+- 🚀 **Professional Launch**: Clean, consistent @blok-ts ecosystem on NPM
+- 🎯 **Community Trust**: Accurate metadata and branding for developer adoption
+- 🔓 **Unblock Development**: Enables all other tasks requiring published packages
+- ⚡ **Quick Fix**: Only 4 hours to solve critical blocking issue
+
+**Critical Files Requiring Cleanup**:
+```bash
+# PUBLIC PACKAGES (❌ Will appear with legacy metadata on NPM)
+nodes/control-flow/if-else@1.0.0/package.json     # "nanoservice if-else"
+packages/cli/package.json                          # ["nanoservice", "nanoservice-ts"]
+
+# INFRASTRUCTURE  
+infra/metrics/dashboard.json                       # "nanoservice-http" service names
+```
+
+**Implementation Strategy**:
+- **Phase 1**: Clean public package descriptions and keywords (30 min)
+- **Phase 2**: Reset all versions to 0.1.0 for coordinated ecosystem launch (15 min)  
+- **Phase 3**: Update infrastructure service names (30 min)
+- **Phase 4**: Test and execute NPM publication (2.5 hours)
+
+**Business Validation**: 
+1. "Do all @blok-ts packages on NPM show professional, accurate metadata without legacy references?"
+2. "Can developers discover blok packages through relevant keywords like 'workflow', 'backend', 'orchestration'?"
+3. "Does the published ecosystem reflect a coordinated, professional product launch?"
 
 ### **TASK-001 Details: CLI Non-Interactive Mode**
 **Objective**: Enable `blokctl create project`, `create node`, and `create workflow` to run without interactive prompts
