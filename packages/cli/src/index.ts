@@ -41,6 +41,11 @@ async function main() {
 		const project = new Command("project")
 			.description("Create a new Project")
 			.option("-n, --name <value>", "Create a default Project")
+			.option("--trigger <value>", "Trigger type (http)")
+			.option("--runtimes <value>", "Runtimes (node)")
+			.option("--manager <value>", "Package manager (npm|yarn|pnpm)")
+			.option("--examples", "Include examples")
+			.option("--non-interactive", "Run without prompts")
 			.action(async (options: OptionValues) => {
 				await analytics.trackCommandExecution({
 					command: "create project",
@@ -67,6 +72,11 @@ async function main() {
 		const node = new Command("node")
 			.description("Create a new Node")
 			.option("-n, --name <value>", "Create a default Node")
+			.option("--runtime <value>", "Runtime (typescript)")
+			.option("--type <value>", "Node type (module|class)")
+			.option("--template <value>", "Template (class|ui)")
+			.option("--manager <value>", "Package manager (npm|yarn|pnpm)")
+			.option("--non-interactive", "Run without prompts")
 			.action(async (options: OptionValues) => {
 				await analytics.trackCommandExecution({
 					command: "create node",
@@ -93,6 +103,7 @@ async function main() {
 		const workflow = new Command("workflow")
 			.description("Create a new Workflow")
 			.option("-n, --name <value>", "Create a default Workflow")
+			.option("--non-interactive", "Run without prompts")
 			.action(async (options: OptionValues) => {
 				await analytics.trackCommandExecution({
 					command: "create workflow",

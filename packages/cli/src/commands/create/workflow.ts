@@ -5,6 +5,7 @@ import type { OptionValues } from "commander";
 import figlet from "figlet";
 import fsExtra from "fs-extra";
 import color from "picocolors";
+import { validateNonInteractiveParams } from "../../services/validation.js";
 import { workflow_template } from "./utils/Examples.js";
 
 const HOME_DIR = `${os.homedir()}/.blokctl`;
@@ -12,9 +13,16 @@ const GITHUB_REPO_LOCAL = `${HOME_DIR}/blok`;
 
 export async function createWorkflow(opts: OptionValues, currentPath = false) {
 	const isDefault = opts.name !== undefined;
+	const isNonInteractive = opts.nonInteractive === true;
 	let workflowName: string = opts.name ? opts.name : "";
 
-	if (!isDefault) {
+	// Non-interactive mode (SAFE - Additive only)
+	if (isNonInteractive) {
+		validateNonInteractiveParams("workflow", opts);
+		workflowName = opts.name;
+	}
+	// Interactive mode (EXISTING - Unchanged)
+	else if (!isDefault) {
 		console.log(
 			figlet.textSync("Blok CLI".toUpperCase(), {
 				font: "Digital",

@@ -8,6 +8,7 @@ import figlet from "figlet";
 import fsExtra from "fs-extra";
 import color from "picocolors";
 import { manager as pm } from "../../services/package-manager.js";
+import { validateNonInteractiveParams } from "../../services/validation.js";
 import { python3_file } from "./utils/Examples.js";
 
 const exec = util.promisify(child_process.exec);
@@ -19,13 +20,24 @@ export async function createNode(opts: OptionValues, currentPath = false) {
 	const availableManagers = await pm.getAvailableManagers();
 	let manager = await pm.getManager();
 	const isDefault = opts.name !== undefined;
+	const isNonInteractive = opts.nonInteractive === true;
 	let nodeName: string = opts.name ? opts.name : "";
 	let nodeType = "";
 	let template = "";
 	let node_runtime = "";
 	let selectedManager = "npm";
 
-	if (!isDefault) {
+	// Non-interactive mode (SAFE - Additive only)
+	if (isNonInteractive) {
+		validateNonInteractiveParams("node", opts);
+		nodeName = opts.name;
+		node_runtime = opts.runtime || "typescript";
+		nodeType = opts.type || "module";
+		template = opts.template || "class";
+		selectedManager = opts.manager || (await pm.getManager());
+	}
+	// Interactive mode (EXISTING - Unchanged)
+	else if (!isDefault) {
 		console.log(
 			figlet.textSync("Blok CLI".toUpperCase(), {
 				font: "Digital",

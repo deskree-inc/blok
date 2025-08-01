@@ -10,6 +10,7 @@ import fsExtra from "fs-extra";
 import color from "picocolors";
 import simpleGit, { type SimpleGit, type SimpleGitOptions } from "simple-git";
 import { manager as pm } from "../../services/package-manager.js";
+import { validateNonInteractiveParams } from "../../services/validation.js";
 import {
 	examples_url,
 	node_file,
@@ -45,13 +46,24 @@ export async function createProject(opts: OptionValues, version: string, current
 	const availableManagers = await pm.getAvailableManagers();
 	let manager = await pm.getManager();
 	const isDefault = opts.name !== undefined;
+	const isNonInteractive = opts.nonInteractive === true;
 	let projectName: string = opts.name ? opts.name : "";
 	let trigger = "http";
 	let examples = false;
 	let runtimes = ["node"];
 	let selectedManager = "npm";
 
-	if (!isDefault) {
+	// Non-interactive mode (SAFE - Additive only)
+	if (isNonInteractive) {
+		validateNonInteractiveParams("project", opts);
+		projectName = opts.name;
+		trigger = opts.trigger || "http";
+		runtimes = opts.runtimes ? opts.runtimes.split(",") : ["node"];
+		selectedManager = opts.manager || (await pm.getManager());
+		examples = opts.examples || false;
+	}
+	// Interactive mode (EXISTING - Unchanged)
+	else if (!isDefault) {
 		console.log(
 			figlet.textSync("Blok CLI".toUpperCase(), {
 				font: "Digital",
