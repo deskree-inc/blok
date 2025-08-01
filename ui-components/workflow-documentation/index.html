@@ -1,0 +1,1720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blok Workflow Documentation</title>
+    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/highlight.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/styles/github.min.css">
+    <style>
+        body, html, #root {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        .markdown-content h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .markdown-content h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        .markdown-content h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-top: 1.25rem;
+            margin-bottom: 0.75rem;
+        }
+        .markdown-content p {
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+        .markdown-content ul, .markdown-content ol {
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+        }
+        .markdown-content ul {
+            list-style-type: disc;
+        }
+        .markdown-content ol {
+            list-style-type: decimal;
+        }
+        .markdown-content li {
+            margin-bottom: 0.5rem;
+        }
+        .markdown-content code {
+            font-family: 'Courier New', monospace;
+            background-color: #f3f4f6;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+        }
+        .markdown-content pre {
+            background-color: #f3f4f6;
+            padding: 1rem;
+            border-radius: 0.375rem;
+            overflow-x: auto;
+            margin-bottom: 1rem;
+        }
+        .markdown-content pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+        .markdown-content blockquote {
+            border-left: 4px solid #e5e7eb;
+            padding-left: 1rem;
+            margin-left: 0;
+            margin-right: 0;
+            margin-bottom: 1rem;
+            color: #6b7280;
+        }
+        .markdown-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+        }
+        .markdown-content table th {
+            background-color: #f3f4f6;
+            font-weight: 600;
+            text-align: left;
+            padding: 0.75rem;
+            border: 1px solid #e5e7eb;
+        }
+        .markdown-content table td {
+            padding: 0.75rem;
+            border: 1px solid #e5e7eb;
+        }
+        .markdown-content a {
+            color: #4f46e5;
+            text-decoration: none;
+        }
+        .markdown-content a:hover {
+            text-decoration: underline;
+        }
+        .markdown-content img {
+            max-width: 100%;
+            height: auto;
+            margin: 1rem 0;
+            border-radius: 0.375rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="root" class="w-full h-screen"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // Sample workflow documentation data
+        const sampleWorkflows = [
+            { 
+                id: 'countries-api', 
+                name: 'Countries API', 
+                description: 'Fetches and displays country data',
+                version: '1.0.0',
+                author: 'Blok Team',
+                tags: ['api', 'countries', 'data'],
+                category: 'Data Fetching'
+            },
+            { 
+                id: 'weather-service', 
+                name: 'Weather Service', 
+                description: 'Gets weather information for a location',
+                version: '1.1.2',
+                author: 'Blok Team',
+                tags: ['api', 'weather', 'location'],
+                category: 'Data Fetching'
+            },
+            { 
+                id: 'user-auth', 
+                name: 'User Authentication', 
+                description: 'Handles user login and registration',
+                version: '2.0.1',
+                author: 'Blok Team',
+                tags: ['auth', 'user', 'security'],
+                category: 'Authentication'
+            },
+            { 
+                id: 'data-processing', 
+                name: 'Data Processing', 
+                description: 'Processes and transforms data',
+                version: '1.3.0',
+                author: 'Blok Team',
+                tags: ['data', 'processing', 'transform'],
+                category: 'Data Processing'
+            },
+            { 
+                id: 'email-notifications', 
+                name: 'Email Notifications', 
+                description: 'Sends email notifications',
+                version: '1.0.5',
+                author: 'Blok Team',
+                tags: ['email', 'notifications'],
+                category: 'Notifications'
+            },
+        ];
+
+        // Sample documentation content in markdown
+        const sampleDocContent = {
+            'countries-api': `
+# Countries API Workflow
+
+## Overview
+
+The Countries API workflow provides a simple interface to fetch and display country data from the [REST Countries API](https://restcountries.com/). This workflow can be used as a standalone service or integrated into other workflows that require country information.
+
+## Endpoints
+
+### GET /countries
+
+Returns a list of all countries with basic information.
+
+**Query Parameters:**
+
+- None
+
+**Response:**
+
+\`\`\`json
+{
+  "success": true,
+  "data": [
+    {
+      "name": "Afghanistan",
+      "alpha2Code": "AF",
+      "alpha3Code": "AFG",
+      "capital": "Kabul",
+      "region": "Asia",
+      "population": 27657145
+    },
+    // ... more countries
+  ]
+}
+\`\`\`
+
+### GET /countries/:code
+
+Returns detailed information about a specific country.
+
+**Path Parameters:**
+
+- \`code\` - The alpha2Code or alpha3Code of the country
+
+**Response:**
+
+\`\`\`json
+{
+  "success": true,
+  "data": {
+    "name": "United States of America",
+    "topLevelDomain": [".us"],
+    "alpha2Code": "US",
+    "alpha3Code": "USA",
+    "callingCodes": ["1"],
+    "capital": "Washington, D.C.",
+    "altSpellings": ["US", "USA", "United States of America"],
+    "region": "Americas",
+    "subregion": "Northern America",
+    "population": 323947000,
+    "latlng": [38.0, -97.0],
+    "demonym": "American",
+    "area": 9629091.0,
+    "gini": 48.0,
+    "timezones": ["UTC-12:00", "UTC-11:00", "UTC-10:00", "UTC-09:00", "UTC-08:00", "UTC-07:00", "UTC-06:00", "UTC-05:00", "UTC-04:00", "UTC+10:00", "UTC+12:00"],
+    "borders": ["CAN", "MEX"],
+    "nativeName": "United States",
+    "numericCode": "840",
+    "currencies": [
+      {
+        "code": "USD",
+        "name": "United States dollar",
+        "symbol": "$"
+      }
+    ],
+    "languages": [
+      {
+        "iso639_1": "en",
+        "iso639_2": "eng",
+        "name": "English",
+        "nativeName": "English"
+      }
+    ],
+    "flag": "https://restcountries.eu/data/usa.svg"
+  }
+}
+\`\`\`
+
+## Workflow Configuration
+
+### Nodes
+
+1. **HTTP Trigger**
+   - Type: \`http-trigger\`
+   - Handles incoming HTTP requests
+
+2. **Route Handler**
+   - Type: \`router\`
+   - Routes requests to appropriate handlers
+
+3. **Countries API Client**
+   - Type: \`http-request\`
+   - Makes requests to the REST Countries API
+
+4. **Response Formatter**
+   - Type: \`transformer\`
+   - Formats the API response
+
+5. **HTTP Response**
+   - Type: \`http-response\`
+   - Sends the formatted response back to the client
+
+### Workflow JSON
+
+\`\`\`json
+{
+  "name": "Countries API",
+  "version": "1.0.0",
+  "nodes": [
+    {
+      "id": "http-trigger",
+      "type": "@nanoservice-ts/http-trigger",
+      "config": {
+        "path": "/countries",
+        "method": "GET"
+      }
+    },
+    {
+      "id": "router",
+      "type": "@nanoservice-ts/router",
+      "config": {
+        "routes": [
+          {
+            "path": "/countries",
+            "handler": "get-all-countries"
+          },
+          {
+            "path": "/countries/:code",
+            "handler": "get-country-by-code"
+          }
+        ]
+      }
+    },
+    {
+      "id": "get-all-countries",
+      "type": "@nanoservice-ts/http-request",
+      "config": {
+        "url": "https://restcountries.com/v2/all",
+        "method": "GET"
+      }
+    },
+    {
+      "id": "get-country-by-code",
+      "type": "@nanoservice-ts/http-request",
+      "config": {
+        "url": "https://restcountries.com/v2/alpha/{{params.code}}",
+        "method": "GET"
+      }
+    },
+    {
+      "id": "response-formatter",
+      "type": "@nanoservice-ts/transformer",
+      "config": {
+        "transform": "return { success: true, data: input };"
+      }
+    },
+    {
+      "id": "http-response",
+      "type": "@nanoservice-ts/http-response",
+      "config": {
+        "statusCode": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "http-trigger",
+      "to": "router"
+    },
+    {
+      "from": "router",
+      "to": "get-all-countries",
+      "condition": "input.path === '/countries'"
+    },
+    {
+      "from": "router",
+      "to": "get-country-by-code",
+      "condition": "input.path.startsWith('/countries/')"
+    },
+    {
+      "from": "get-all-countries",
+      "to": "response-formatter"
+    },
+    {
+      "from": "get-country-by-code",
+      "to": "response-formatter"
+    },
+    {
+      "from": "response-formatter",
+      "to": "http-response"
+    }
+  ]
+}
+\`\`\`
+
+## Usage Examples
+
+### Fetch All Countries
+
+\`\`\`bash
+curl -X GET http://localhost:3000/countries
+\`\`\`
+
+### Fetch Specific Country
+
+\`\`\`bash
+curl -X GET http://localhost:3000/countries/US
+\`\`\`
+
+## Error Handling
+
+The workflow handles the following error scenarios:
+
+1. **Country Not Found**
+   - Status Code: 404
+   - Response: \`{ "success": false, "error": "Country not found" }\`
+
+2. **Invalid Request**
+   - Status Code: 400
+   - Response: \`{ "success": false, "error": "Invalid request" }\`
+
+3. **API Error**
+   - Status Code: 500
+   - Response: \`{ "success": false, "error": "Error fetching country data" }\`
+
+## Dependencies
+
+- @nanoservice-ts/http-trigger
+- @nanoservice-ts/router
+- @nanoservice-ts/http-request
+- @nanoservice-ts/transformer
+- @nanoservice-ts/http-response
+
+## Changelog
+
+### v1.0.0 (2023-06-01)
+
+- Initial release
+- Support for fetching all countries
+- Support for fetching a specific country by code
+`,
+            'weather-service': `
+# Weather Service Workflow
+
+## Overview
+
+The Weather Service workflow provides a simple interface to fetch weather information for a specific location using the [OpenWeatherMap API](https://openweathermap.org/api). This workflow can be used as a standalone service or integrated into other workflows that require weather data.
+
+## Endpoints
+
+### GET /weather
+
+Returns current weather information for a specified location.
+
+**Query Parameters:**
+
+- \`city\` - The name of the city (required)
+- \`country\` - The country code (optional)
+- \`units\` - The units of measurement (optional, default: "metric")
+
+**Response:**
+
+\`\`\`json
+{
+  "success": true,
+  "data": {
+    "location": {
+      "name": "London",
+      "country": "GB",
+      "coordinates": {
+        "lat": 51.5074,
+        "lon": -0.1278
+      }
+    },
+    "weather": {
+      "description": "scattered clouds",
+      "icon": "03d",
+      "temperature": 18.5,
+      "feels_like": 17.9,
+      "humidity": 65,
+      "pressure": 1012,
+      "wind": {
+        "speed": 4.1,
+        "direction": 270
+      }
+    },
+    "timestamp": "2023-06-15T12:30:45Z"
+  }
+}
+\`\`\`
+
+### GET /weather/forecast
+
+Returns a 5-day weather forecast for a specified location.
+
+**Query Parameters:**
+
+- \`city\` - The name of the city (required)
+- \`country\` - The country code (optional)
+- \`units\` - The units of measurement (optional, default: "metric")
+
+**Response:**
+
+\`\`\`json
+{
+  "success": true,
+  "data": {
+    "location": {
+      "name": "London",
+      "country": "GB",
+      "coordinates": {
+        "lat": 51.5074,
+        "lon": -0.1278
+      }
+    },
+    "forecast": [
+      {
+        "date": "2023-06-15",
+        "weather": {
+          "description": "scattered clouds",
+          "icon": "03d",
+          "temperature": {
+            "min": 15.2,
+            "max": 19.8
+          },
+          "humidity": 65,
+          "wind": {
+            "speed": 4.1,
+            "direction": 270
+          }
+        }
+      },
+      // ... more days
+    ]
+  }
+}
+\`\`\`
+
+## Workflow Configuration
+
+### Nodes
+
+1. **HTTP Trigger**
+   - Type: \`http-trigger\`
+   - Handles incoming HTTP requests
+
+2. **Route Handler**
+   - Type: \`router\`
+   - Routes requests to appropriate handlers
+
+3. **Parameter Validator**
+   - Type: \`validator\`
+   - Validates request parameters
+
+4. **Weather API Client**
+   - Type: \`http-request\`
+   - Makes requests to the OpenWeatherMap API
+
+5. **Response Formatter**
+   - Type: \`transformer\`
+   - Formats the API response
+
+6. **HTTP Response**
+   - Type: \`http-response\`
+   - Sends the formatted response back to the client
+
+### Workflow JSON
+
+\`\`\`json
+{
+  "name": "Weather Service",
+  "version": "1.1.2",
+  "nodes": [
+    {
+      "id": "http-trigger",
+      "type": "@nanoservice-ts/http-trigger",
+      "config": {
+        "path": "/weather",
+        "method": "GET"
+      }
+    },
+    {
+      "id": "router",
+      "type": "@nanoservice-ts/router",
+      "config": {
+        "routes": [
+          {
+            "path": "/weather",
+            "handler": "get-current-weather"
+          },
+          {
+            "path": "/weather/forecast",
+            "handler": "get-weather-forecast"
+          }
+        ]
+      }
+    },
+    {
+      "id": "param-validator",
+      "type": "@nanoservice-ts/validator",
+      "config": {
+        "schema": {
+          "type": "object",
+          "required": ["city"],
+          "properties": {
+            "city": { "type": "string" },
+            "country": { "type": "string", "minLength": 2, "maxLength": 2 },
+            "units": { "type": "string", "enum": ["metric", "imperial"] }
+          }
+        }
+      }
+    },
+    {
+      "id": "get-current-weather",
+      "type": "@nanoservice-ts/http-request",
+      "config": {
+        "url": "https://api.openweathermap.org/data/2.5/weather",
+        "method": "GET",
+        "params": {
+          "q": "{{input.query.city}}{{input.query.country ? ',' + input.query.country : ''}}",
+          "units": "{{input.query.units || 'metric'}}",
+          "appid": "{{env.OPENWEATHERMAP_API_KEY}}"
+        }
+      }
+    },
+    {
+      "id": "get-weather-forecast",
+      "type": "@nanoservice-ts/http-request",
+      "config": {
+        "url": "https://api.openweathermap.org/data/2.5/forecast",
+        "method": "GET",
+        "params": {
+          "q": "{{input.query.city}}{{input.query.country ? ',' + input.query.country : ''}}",
+          "units": "{{input.query.units || 'metric'}}",
+          "appid": "{{env.OPENWEATHERMAP_API_KEY}}"
+        }
+      }
+    },
+    {
+      "id": "format-current-weather",
+      "type": "@nanoservice-ts/transformer",
+      "config": {
+        "transform": "return { success: true, data: { location: { name: input.name, country: input.sys.country, coordinates: { lat: input.coord.lat, lon: input.coord.lon } }, weather: { description: input.weather[0].description, icon: input.weather[0].icon, temperature: input.main.temp, feels_like: input.main.feels_like, humidity: input.main.humidity, pressure: input.main.pressure, wind: { speed: input.wind.speed, direction: input.wind.deg } }, timestamp: new Date().toISOString() } };"
+      }
+    },
+    {
+      "id": "format-forecast",
+      "type": "@nanoservice-ts/transformer",
+      "config": {
+        "transform": "const forecast = input.list.reduce((acc, item) => { const date = item.dt_txt.split(' ')[0]; if (!acc[date]) { acc[date] = { date, weather: { description: item.weather[0].description, icon: item.weather[0].icon, temperature: { min: item.main.temp_min, max: item.main.temp_max }, humidity: item.main.humidity, wind: { speed: item.wind.speed, direction: item.wind.deg } } }; } return acc; }, {}); return { success: true, data: { location: { name: input.city.name, country: input.city.country, coordinates: { lat: input.city.coord.lat, lon: input.city.coord.lon } }, forecast: Object.values(forecast) } };"
+      }
+    },
+    {
+      "id": "error-handler",
+      "type": "@nanoservice-ts/transformer",
+      "config": {
+        "transform": "return { success: false, error: input.message || 'An error occurred' };"
+      }
+    },
+    {
+      "id": "http-response",
+      "type": "@nanoservice-ts/http-response",
+      "config": {
+        "statusCode": "{{input.success ? 200 : 400}}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "http-trigger",
+      "to": "param-validator"
+    },
+    {
+      "from": "param-validator",
+      "to": "router",
+      "condition": "input.valid"
+    },
+    {
+      "from": "param-validator",
+      "to": "error-handler",
+      "condition": "!input.valid"
+    },
+    {
+      "from": "router",
+      "to": "get-current-weather",
+      "condition": "input.path === '/weather'"
+    },
+    {
+      "from": "router",
+      "to": "get-weather-forecast",
+      "condition": "input.path === '/weather/forecast'"
+    },
+    {
+      "from": "get-current-weather",
+      "to": "format-current-weather"
+    },
+    {
+      "from": "get-weather-forecast",
+      "to": "format-forecast"
+    },
+    {
+      "from": "format-current-weather",
+      "to": "http-response"
+    },
+    {
+      "from": "format-forecast",
+      "to": "http-response"
+    },
+    {
+      "from": "error-handler",
+      "to": "http-response"
+    }
+  ]
+}
+\`\`\`
+
+## Usage Examples
+
+### Get Current Weather
+
+\`\`\`bash
+curl -X GET "http://localhost:3000/weather?city=London&country=GB&units=metric"
+\`\`\`
+
+### Get Weather Forecast
+
+\`\`\`bash
+curl -X GET "http://localhost:3000/weather/forecast?city=London&country=GB&units=metric"
+\`\`\`
+
+## Error Handling
+
+The workflow handles the following error scenarios:
+
+1. **Missing Required Parameters**
+   - Status Code: 400
+   - Response: \`{ "success": false, "error": "Missing required parameter: city" }\`
+
+2. **Invalid Parameters**
+   - Status Code: 400
+   - Response: \`{ "success": false, "error": "Invalid parameter: units must be one of [metric, imperial]" }\`
+
+3. **Location Not Found**
+   - Status Code: 404
+   - Response: \`{ "success": false, "error": "Location not found" }\`
+
+4. **API Error**
+   - Status Code: 500
+   - Response: \`{ "success": false, "error": "Error fetching weather data" }\`
+
+## Dependencies
+
+- @nanoservice-ts/http-trigger
+- @nanoservice-ts/router
+- @nanoservice-ts/validator
+- @nanoservice-ts/http-request
+- @nanoservice-ts/transformer
+- @nanoservice-ts/http-response
+
+## Environment Variables
+
+- \`OPENWEATHERMAP_API_KEY\` - Your OpenWeatherMap API key
+
+## Changelog
+
+### v1.1.2 (2023-06-10)
+
+- Fixed bug in forecast data processing
+- Improved error handling
+
+### v1.1.1 (2023-06-05)
+
+- Added support for imperial units
+- Updated API endpoint to use the latest version
+
+### v1.1.0 (2023-06-03)
+
+- Added weather forecast endpoint
+- Improved response formatting
+
+### v1.0.0 (2023-06-01)
+
+- Initial release
+- Support for current weather information
+`,
+            'user-auth': `
+# User Authentication Workflow
+
+## Overview
+
+The User Authentication workflow provides a complete solution for user registration, login, and authentication management. It includes secure password handling, JWT token generation, and user profile management.
+
+## Endpoints
+
+### POST /auth/register
+
+Registers a new user.
+
+**Request Body:**
+
+\`\`\`json
+{
+  "username": "johndoe",
+  "email": "john.doe@example.com",
+  "password": "securePassword123",
+  "name": "John Doe"
+}
+\`\`\`
+
+**Response:**
+
+\`\`\`json
+{
+  "success": true,
+  "message": "User registered successfully",
+  "user": {
+    "id": "user-123",
+    "username": "johndoe",
+    "email": "john.doe@example.com",
+    "name": "John Doe",
+    "created_at": "2023-06-15T12:30:45Z"
+  }
+}
+\`\`\`
+
+### POST /auth/login
+
+Authenticates a user and returns a JWT token.
+
+**Request Body:**
+
+\`\`\`json
+{
+  "username": "johndoe",
+  "password": "securePassword123"
+}
+\`\`\`
+
+**Response:**
+
+\`\`\`json
+{
+  "success": true,
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": "user-123",
+    "username": "johndoe",
+    "email": "john.doe@example.com",
+    "name": "John Doe"
+  }
+}
+\`\`\`
+
+### GET /auth/profile
+
+Returns the authenticated user's profile.
+
+**Headers:**
+
+- \`Authorization\` - Bearer token
+
+**Response:**
+
+\`\`\`json
+{
+  "success": true,
+  "user": {
+    "id": "user-123",
+    "username": "johndoe",
+    "email": "john.doe@example.com",
+    "name": "John Doe",
+    "created_at": "2023-06-15T12:30:45Z",
+    "updated_at": "2023-06-15T12:30:45Z"
+  }
+}
+\`\`\`
+
+### PUT /auth/profile
+
+Updates the authenticated user's profile.
+
+**Headers:**
+
+- \`Authorization\` - Bearer token
+
+**Request Body:**
+
+\`\`\`json
+{
+  "name": "John D. Doe",
+  "email": "john.d.doe@example.com"
+}
+\`\`\`
+
+**Response:**
+
+\`\`\`json
+{
+  "success": true,
+  "message": "Profile updated successfully",
+  "user": {
+    "id": "user-123",
+    "username": "johndoe",
+    "email": "john.d.doe@example.com",
+    "name": "John D. Doe",
+    "updated_at": "2023-06-15T13:45:30Z"
+  }
+}
+\`\`\`
+
+### POST /auth/logout
+
+Logs out the current user by invalidating their token.
+
+**Headers:**
+
+- \`Authorization\` - Bearer token
+
+**Response:**
+
+\`\`\`json
+{
+  "success": true,
+  "message": "Logged out successfully"
+}
+\`\`\`
+
+## Workflow Configuration
+
+### Nodes
+
+1. **HTTP Trigger**
+   - Type: \`http-trigger\`
+   - Handles incoming HTTP requests
+
+2. **Route Handler**
+   - Type: \`router\`
+   - Routes requests to appropriate handlers
+
+3. **Input Validator**
+   - Type: \`validator\`
+   - Validates request inputs
+
+4. **Password Hasher**
+   - Type: \`password-hasher\`
+   - Securely hashes passwords
+
+5. **Database Client**
+   - Type: \`database-client\`
+   - Interacts with the user database
+
+6. **JWT Generator**
+   - Type: \`jwt-generator\`
+   - Generates JWT tokens
+
+7. **JWT Verifier**
+   - Type: \`jwt-verifier\`
+   - Verifies JWT tokens
+
+8. **Response Formatter**
+   - Type: \`transformer\`
+   - Formats the response
+
+9. **HTTP Response**
+   - Type: \`http-response\`
+   - Sends the formatted response back to the client
+
+### Security Considerations
+
+1. **Password Security**
+   - Passwords are hashed using bcrypt with a salt round of 10
+   - Plain text passwords are never stored or logged
+
+2. **JWT Security**
+   - Tokens are signed with a secure secret key
+   - Short expiration time (1 hour by default)
+   - Refresh token mechanism for extended sessions
+
+3. **Input Validation**
+   - All inputs are validated against strict schemas
+   - Email format validation
+   - Password strength requirements
+
+4. **Rate Limiting**
+   - Login attempts are rate-limited to prevent brute force attacks
+   - IP-based and username-based rate limiting
+
+## Dependencies
+
+- @nanoservice-ts/http-trigger
+- @nanoservice-ts/router
+- @nanoservice-ts/validator
+- @nanoservice-ts/password-hasher
+- @nanoservice-ts/database-client
+- @nanoservice-ts/jwt-generator
+- @nanoservice-ts/jwt-verifier
+- @nanoservice-ts/transformer
+- @nanoservice-ts/http-response
+
+## Environment Variables
+
+- \`JWT_SECRET\` - Secret key for JWT signing
+- \`JWT_EXPIRATION\` - Token expiration time in seconds
+- \`DATABASE_URL\` - Database connection string
+
+## Changelog
+
+### v2.0.1 (2023-06-12)
+
+- Fixed token validation issue
+- Improved error messages
+
+### v2.0.0 (2023-06-10)
+
+- Added refresh token support
+- Improved security with rate limiting
+- Enhanced user profile management
+
+### v1.0.0 (2023-06-01)
+
+- Initial release
+- Basic authentication functionality
+`,
+            'data-processing': `
+# Data Processing Workflow
+
+## Overview
+
+The Data Processing workflow provides a flexible system for processing, transforming, and analyzing data from various sources. It supports multiple input formats, complex transformations, and various output options.
+
+## Endpoints
+
+### POST /process
+
+Processes data according to the specified configuration.
+
+**Request Body:**
+
+\`\`\`json
+{
+  "source": {
+    "type": "json",
+    "data": [
+      { "id": 1, "name": "Product A", "price": 10.99, "category": "Electronics" },
+      { "id": 2, "name": "Product B", "price": 24.99, "category": "Home" },
+      { "id": 3, "name": "Product C", "price": 5.99, "category": "Electronics" },
+      { "id": 4, "name": "Product D", "price": 19.99, "category": "Clothing" }
+    ]
+  },
+  "transformations": [
+    {
+      "type": "filter",
+      "config": {
+        "field": "category",
+        "operator": "equals",
+        "value": "Electronics"
+      }
+    },
+    {
+      "type": "map",
+      "config": {
+        "mappings": {
+          "productId": "id",
+          "productName": "name",
+          "cost": "price"
+        }
+      }
+    },
+    {
+      "type": "sort",
+      "config": {
+        "field": "cost",
+        "order": "desc"
+      }
+    }
+  ],
+  "output": {
+    "format": "json"
+  }
+}
+\`\`\`
+
+**Response:**
+
+\`\`\`json
+{
+  "success": true,
+  "data": [
+    { "productId": 1, "productName": "Product A", "cost": 10.99 },
+    { "productId": 3, "productName": "Product C", "cost": 5.99 }
+  ],
+  "metadata": {
+    "inputCount": 4,
+    "outputCount": 2,
+    "processingTime": "0.015s"
+  }
+}
+\`\`\`
+
+### POST /process/batch
+
+Processes multiple datasets in a single request.
+
+**Request Body:**
+
+\`\`\`json
+{
+  "datasets": [
+    {
+      "id": "dataset1",
+      "source": { /* source configuration */ },
+      "transformations": [ /* transformations */ ],
+      "output": { /* output configuration */ }
+    },
+    {
+      "id": "dataset2",
+      "source": { /* source configuration */ },
+      "transformations": [ /* transformations */ ],
+      "output": { /* output configuration */ }
+    }
+  ]
+}
+\`\`\`
+
+**Response:**
+
+\`\`\`json
+{
+  "success": true,
+  "results": {
+    "dataset1": {
+      "data": [ /* processed data */ ],
+      "metadata": { /* processing metadata */ }
+    },
+    "dataset2": {
+      "data": [ /* processed data */ ],
+      "metadata": { /* processing metadata */ }
+    }
+  },
+  "metadata": {
+    "totalProcessingTime": "0.045s"
+  }
+}
+\`\`\`
+
+## Supported Transformations
+
+### Filter
+
+Filters data based on field values.
+
+**Configuration:**
+
+\`\`\`json
+{
+  "type": "filter",
+  "config": {
+    "field": "fieldName",
+    "operator": "equals|notEquals|greaterThan|lessThan|contains|startsWith|endsWith|in|notIn",
+    "value": "value to compare against"
+  }
+}
+\`\`\`
+
+### Map
+
+Renames or restructures fields.
+
+**Configuration:**
+
+\`\`\`json
+{
+  "type": "map",
+  "config": {
+    "mappings": {
+      "newFieldName1": "oldFieldName1",
+      "newFieldName2": "oldFieldName2"
+    }
+  }
+}
+\`\`\`
+
+### Transform
+
+Applies a JavaScript function to transform data.
+
+**Configuration:**
+
+\`\`\`json
+{
+  "type": "transform",
+  "config": {
+    "function": "item => ({ ...item, total: item.price * item.quantity })"
+  }
+}
+\`\`\`
+
+### Group
+
+Groups data by a field and applies aggregations.
+
+**Configuration:**
+
+\`\`\`json
+{
+  "type": "group",
+  "config": {
+    "groupBy": "category",
+    "aggregations": {
+      "count": { "type": "count" },
+      "totalPrice": { "type": "sum", "field": "price" },
+      "avgPrice": { "type": "avg", "field": "price" },
+      "minPrice": { "type": "min", "field": "price" },
+      "maxPrice": { "type": "max", "field": "price" }
+    }
+  }
+}
+\`\`\`
+
+### Sort
+
+Sorts data by one or more fields.
+
+**Configuration:**
+
+\`\`\`json
+{
+  "type": "sort",
+  "config": {
+    "field": "fieldName",
+    "order": "asc|desc"
+  }
+}
+\`\`\`
+
+### Limit
+
+Limits the number of items in the result.
+
+**Configuration:**
+
+\`\`\`json
+{
+  "type": "limit",
+  "config": {
+    "count": 10,
+    "offset": 0
+  }
+}
+\`\`\`
+
+## Supported Input Sources
+
+- **JSON** - Direct JSON data or URL to JSON file
+- **CSV** - Direct CSV data or URL to CSV file
+- **Database** - SQL query against a connected database
+- **API** - Data from an external API endpoint
+
+## Supported Output Formats
+
+- **JSON** - Standard JSON format
+- **CSV** - Comma-separated values
+- **Excel** - Microsoft Excel format
+- **Database** - Insert/update to a database table
+
+## Dependencies
+
+- @nanoservice-ts/http-trigger
+- @nanoservice-ts/router
+- @nanoservice-ts/validator
+- @nanoservice-ts/data-processor
+- @nanoservice-ts/transformer
+- @nanoservice-ts/http-response
+
+## Changelog
+
+### v1.3.0 (2023-06-10)
+
+- Added batch processing endpoint
+- Added Excel output format
+- Improved error handling and reporting
+
+### v1.2.0 (2023-06-05)
+
+- Added database input and output support
+- Added group transformation with aggregations
+- Performance optimizations
+
+### v1.1.0 (2023-06-03)
+
+- Added CSV input and output support
+- Added more transformation types
+- Improved validation
+
+### v1.0.0 (2023-06-01)
+
+- Initial release
+- Basic JSON processing functionality
+`,
+            'email-notifications': `
+# Email Notifications Workflow
+
+## Overview
+
+The Email Notifications workflow provides a reliable system for sending transactional and marketing emails. It supports templates, attachments, scheduling, and tracking.
+
+## Endpoints
+
+### POST /notify/email
+
+Sends an email notification.
+
+**Request Body:**
+
+\`\`\`json
+{
+  "to": "recipient@example.com",
+  "subject": "Your Order Confirmation",
+  "template": "order-confirmation",
+  "data": {
+    "orderNumber": "ORD-12345",
+    "customerName": "John Doe",
+    "orderDate": "2023-06-15T12:30:45Z",
+    "items": [
+      { "name": "Product A", "quantity": 2, "price": 10.99 },
+      { "name": "Product B", "quantity": 1, "price": 24.99 }
+    ],
+    "total": 46.97
+  },
+  "attachments": [
+    {
+      "filename": "invoice.pdf",
+      "content": "base64-encoded-content",
+      "contentType": "application/pdf"
+    }
+  ],
+  "options": {
+    "cc": ["support@example.com"],
+    "bcc": ["records@example.com"],
+    "priority": "high",
+    "trackOpens": true,
+    "trackClicks": true
+  }
+}
+\`\`\`
+
+**Response:**
+
+\`\`\`json
+{
+  "success": true,
+  "messageId": "msg-abc123",
+  "status": "queued",
+  "timestamp": "2023-06-15T12:31:00Z"
+}
+\`\`\`
+
+### POST /notify/email/batch
+
+Sends multiple emails in a single request.
+
+**Request Body:**
+
+\`\`\`json
+{
+  "template": "marketing-newsletter",
+  "data": {
+    "newsletterDate": "June 2023",
+    "featuredProducts": [ /* product data */ ]
+  },
+  "recipients": [
+    { "email": "user1@example.com", "name": "User One", "customData": { "userId": "user-123" } },
+    { "email": "user2@example.com", "name": "User Two", "customData": { "userId": "user-456" } }
+  ],
+  "options": {
+    "trackOpens": true,
+    "trackClicks": true,
+    "unsubscribeLink": true
+  }
+}
+\`\`\`
+
+**Response:**
+
+\`\`\`json
+{
+  "success": true,
+  "batchId": "batch-xyz789",
+  "status": "processing",
+  "timestamp": "2023-06-15T12:31:00Z",
+  "total": 2,
+  "processed": 0
+}
+\`\`\`
+
+### GET /notify/email/status/:messageId
+
+Checks the status of a sent email.
+
+**Response:**
+
+\`\`\`json
+{
+  "success": true,
+  "messageId": "msg-abc123",
+  "status": "delivered",
+  "recipient": "recipient@example.com",
+  "sentAt": "2023-06-15T12:31:05Z",
+  "deliveredAt": "2023-06-15T12:31:10Z",
+  "events": [
+    { "type": "queued", "timestamp": "2023-06-15T12:31:00Z" },
+    { "type": "sent", "timestamp": "2023-06-15T12:31:05Z" },
+    { "type": "delivered", "timestamp": "2023-06-15T12:31:10Z" },
+    { "type": "opened", "timestamp": "2023-06-15T12:35:20Z" },
+    { "type": "clicked", "timestamp": "2023-06-15T12:35:30Z", "metadata": { "url": "https://example.com/product/123" } }
+  ]
+}
+\`\`\`
+
+### GET /notify/email/status/batch/:batchId
+
+Checks the status of a batch email operation.
+
+**Response:**
+
+\`\`\`json
+{
+  "success": true,
+  "batchId": "batch-xyz789",
+  "status": "completed",
+  "timestamp": "2023-06-15T12:31:00Z",
+  "total": 2,
+  "processed": 2,
+  "successful": 2,
+  "failed": 0,
+  "stats": {
+    "delivered": 2,
+    "opened": 1,
+    "clicked": 1
+  }
+}
+\`\`\`
+
+## Email Templates
+
+The workflow supports the following email templates:
+
+1. **order-confirmation** - Order confirmation emails
+2. **password-reset** - Password reset instructions
+3. **welcome** - New user welcome emails
+4. **invoice** - Invoice and payment receipts
+5. **marketing-newsletter** - Marketing newsletters
+6. **account-notification** - Account-related notifications
+
+Templates are stored as HTML files with Handlebars syntax for variable substitution.
+
+## Workflow Configuration
+
+### Nodes
+
+1. **HTTP Trigger**
+   - Type: \`http-trigger\`
+   - Handles incoming HTTP requests
+
+2. **Route Handler**
+   - Type: \`router\`
+   - Routes requests to appropriate handlers
+
+3. **Input Validator**
+   - Type: \`validator\`
+   - Validates request inputs
+
+4. **Template Renderer**
+   - Type: \`template-renderer\`
+   - Renders email templates with provided data
+
+5. **Email Sender**
+   - Type: \`email-sender\`
+   - Sends emails through the configured provider
+
+6. **Status Tracker**
+   - Type: \`status-tracker\`
+   - Tracks and stores email delivery status
+
+7. **Response Formatter**
+   - Type: \`transformer\`
+   - Formats the response
+
+8. **HTTP Response**
+   - Type: \`http-response\`
+   - Sends the formatted response back to the client
+
+## Email Providers
+
+The workflow can be configured to use different email providers:
+
+1. **SMTP** - Standard SMTP server
+2. **SendGrid** - SendGrid API
+3. **Mailgun** - Mailgun API
+4. **Amazon SES** - Amazon Simple Email Service
+
+## Dependencies
+
+- @nanoservice-ts/http-trigger
+- @nanoservice-ts/router
+- @nanoservice-ts/validator
+- @nanoservice-ts/template-renderer
+- @nanoservice-ts/email-sender
+- @nanoservice-ts/status-tracker
+- @nanoservice-ts/transformer
+- @nanoservice-ts/http-response
+
+## Environment Variables
+
+- \`EMAIL_PROVIDER\` - The email provider to use (smtp, sendgrid, mailgun, ses)
+- \`SMTP_HOST\` - SMTP server host (for SMTP provider)
+- \`SMTP_PORT\` - SMTP server port (for SMTP provider)
+- \`SMTP_USER\` - SMTP username (for SMTP provider)
+- \`SMTP_PASSWORD\` - SMTP password (for SMTP provider)
+- \`SENDGRID_API_KEY\` - SendGrid API key (for SendGrid provider)
+- \`MAILGUN_API_KEY\` - Mailgun API key (for Mailgun provider)
+- \`MAILGUN_DOMAIN\` - Mailgun domain (for Mailgun provider)
+- \`AWS_ACCESS_KEY_ID\` - AWS access key ID (for Amazon SES provider)
+- \`AWS_SECRET_ACCESS_KEY\` - AWS secret access key (for Amazon SES provider)
+- \`AWS_REGION\` - AWS region (for Amazon SES provider)
+- \`FROM_EMAIL\` - Default sender email address
+- \`FROM_NAME\` - Default sender name
+
+## Changelog
+
+### v1.0.5 (2023-06-12)
+
+- Added support for Amazon SES provider
+- Improved email tracking and analytics
+- Fixed template rendering issues
+
+### v1.0.4 (2023-06-10)
+
+- Added batch email sending capability
+- Improved error handling and reporting
+
+### v1.0.3 (2023-06-07)
+
+- Added support for email attachments
+- Enhanced template system
+
+### v1.0.2 (2023-06-05)
+
+- Added Mailgun provider support
+- Improved email delivery tracking
+
+### v1.0.1 (2023-06-03)
+
+- Added SendGrid provider support
+- Fixed SMTP connection issues
+
+### v1.0.0 (2023-06-01)
+
+- Initial release
+- Basic email notification functionality with SMTP
+`
+        };
+
+        // Sample categories
+        const categories = [
+            'All',
+            'Data Fetching',
+            'Data Processing',
+            'Authentication',
+            'Notifications'
+        ];
+
+        function WorkflowDocumentation() {
+            const [selectedWorkflow, setSelectedWorkflow] = useState(null);
+            const [searchTerm, setSearchTerm] = useState('');
+            const [selectedCategory, setSelectedCategory] = useState('All');
+            const [docContent, setDocContent] = useState('');
+            const contentRef = useRef(null);
+
+            useEffect(() => {
+                // In a real application, you would fetch workflows from an API
+                // For now, we'll use the sample data
+            }, []);
+
+            useEffect(() => {
+                if (selectedWorkflow) {
+                    // In a real application, you would fetch the documentation content from an API
+                    // For now, we'll use the sample data
+                    const content = sampleDocContent[selectedWorkflow.id] || '';
+                    setDocContent(content);
+                    
+                    // Scroll to top when changing workflow
+                    if (contentRef.current) {
+                        contentRef.current.scrollTop = 0;
+                    }
+                }
+            }, [selectedWorkflow]);
+
+            useEffect(() => {
+                // Apply syntax highlighting to code blocks
+                if (docContent && contentRef.current) {
+                    document.querySelectorAll('pre code').forEach((block) => {
+                        hljs.highlightBlock(block);
+                    });
+                }
+            }, [docContent]);
+
+            const filteredWorkflows = sampleWorkflows.filter(workflow => {
+                const matchesSearch = 
+                    workflow.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    workflow.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    workflow.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+                
+                const matchesCategory = 
+                    selectedCategory === 'All' || 
+                    workflow.category === selectedCategory;
+                
+                return matchesSearch && matchesCategory;
+            });
+
+            const renderMarkdown = (markdown) => {
+                return { __html: marked.parse(markdown) };
+            };
+
+            return (
+                <div className="w-full h-full bg-gray-50">
+                    <div className="flex flex-col h-full">
+                        <div className="bg-green-600 text-white p-4">
+                            <h1 className="text-2xl font-bold">Workflow Documentation</h1>
+                            <p className="text-sm opacity-80">Comprehensive guides for all workflows</p>
+                        </div>
+                        
+                        <div className="flex-grow flex overflow-hidden">
+                            {/* Sidebar */}
+                            <div className="w-80 bg-white border-r border-gray-200 flex flex-col overflow-hidden">
+                                <div className="p-4 border-b border-gray-200">
+                                    <input 
+                                        type="text" 
+                                        className="w-full p-2 border rounded"
+                                        placeholder="Search workflows..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                    />
+                                </div>
+                                
+                                <div className="p-4 border-b border-gray-200">
+                                    <h2 className="text-sm font-medium text-gray-500 mb-2">Categories</h2>
+                                    <div className="flex flex-wrap gap-2">
+                                        {categories.map(category => (
+                                            <button
+                                                key={category}
+                                                className={`px-3 py-1 text-xs font-medium rounded-full ${selectedCategory === category ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'}`}
+                                                onClick={() => setSelectedCategory(category)}
+                                            >
+                                                {category}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                
+                                <div className="flex-grow overflow-y-auto">
+                                    {filteredWorkflows.length > 0 ? (
+                                        <div className="divide-y divide-gray-200">
+                                            {filteredWorkflows.map(workflow => (
+                                                <div 
+                                                    key={workflow.id}
+                                                    className={`p-4 cursor-pointer ${selectedWorkflow?.id === workflow.id ? 'bg-green-50 border-l-4 border-green-500' : 'hover:bg-gray-50'}`}
+                                                    onClick={() => setSelectedWorkflow(workflow)}
+                                                >
+                                                    <div className="font-medium">{workflow.name}</div>
+                                                    <div className="text-sm text-gray-500 mb-2">{workflow.description}</div>
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="text-xs text-green-600">v{workflow.version}</div>
+                                                        <div className="flex flex-wrap gap-1">
+                                                            {workflow.tags.map(tag => (
+                                                                <span key={tag} className="px-2 py-0.5 text-xs bg-gray-100 rounded-full">{tag}</span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="p-4 text-center text-gray-500">
+                                            No workflows found matching your criteria
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                            
+                            {/* Main Content */}
+                            <div class="flex-grow overflow-hidden flex flex-col">
+                                {selectedWorkflow ? (
+                                    <>
+                                        <div class="bg-white p-4 border-b border-gray-200">
+                                            <h1 className="text-xl font-bold">{selectedWorkflow.name}</h1>
+                                            <div className="flex items-center mt-2">
+                                                <span className="text-sm bg-green-100 text-green-800 px-2 py-0.5 rounded mr-2">{selectedWorkflow.category}</span>
+                                                <span className="text-sm text-gray-500">Version {selectedWorkflow.version}</span>
+                                                <span className="text-sm text-gray-500 ml-4">By {selectedWorkflow.author}</span>
+                                            </div>
+                                        </div>
+                                        <div 
+                                            ref={contentRef}
+                                            className="flex-grow p-6 overflow-y-auto markdown-content"
+                                            dangerouslySetInnerHTML={renderMarkdown(docContent)}
+                                        />
+                                    </>
+                                ) : (
+                                    <div className="flex-grow flex items-center justify-center">
+                                        <div className="text-center p-8">
+                                            <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                            </svg>
+                                            <h3 className="text-lg font-medium text-gray-900 mb-2">Select a workflow</h3>
+                                            <p className="text-gray-500">Choose a workflow from the sidebar to view its documentation</p>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<WorkflowDocumentation />, document.getElementById('root'));
+    </script>
+</body>
+</html>

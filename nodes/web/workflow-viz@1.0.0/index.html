@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <%-metas%>
+    <title><%=title%></title>
+    <%-styles%>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="text/javascript">
+        var ctx_base64 = '<%=ctx%>';
+    </script>
+</head>
+<body class="bg-gray-100 flex flex-col items-center justify-center min-h-screen">
+    <div id="<%=root_element%>" class="w-full h-screen"></div>
+    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script src="https://unpkg.com/react-flow-renderer@9.7.4/dist/umd/index.js"></script>
+    <%-scripts%>
+    <%-react_app%>
+</body>
+</html>

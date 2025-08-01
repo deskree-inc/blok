@@ -1,0 +1,15 @@
+{
+  "name": "workflow-viz",
+  "version": "1.0.0",
+  "description": "A node for visualizing Blok workflows",
+  "category": "web",
+  "author": "",
+  "license": "MIT",
+  "keywords": ["workflow", "visualization", "react", "diagram"],
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts"
+}

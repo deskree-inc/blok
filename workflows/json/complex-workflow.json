@@ -1,0 +1,75 @@
+{
+  "name": "Complex Workflow Example",
+  "description": "A more complex workflow with multiple nodes and connections for visualization testing",
+  "nodes": {
+    "start": {
+      "type": "@nanoservice-ts/api-call",
+      "name": "Fetch Countries",
+      "inputs": {
+        "url": "https://countriesnow.space/api/v0.1/countries/capital",
+        "method": "GET"
+      }
+    },
+    "filter": {
+      "type": "@nanoservice-ts/if-else",
+      "name": "Filter Countries",
+      "inputs": {
+        "condition": "{{start.response.data.length > 10}}"
+      }
+    },
+    "process_many": {
+      "type": "@nanoservice-ts/react",
+      "name": "Process Many Countries",
+      "inputs": {
+        "title": "Many Countries Found",
+        "react_app": "./app/index.jsx"
+      }
+    },
+    "process_few": {
+      "type": "@nanoservice-ts/react",
+      "name": "Process Few Countries",
+      "inputs": {
+        "title": "Few Countries Found",
+        "react_app": "./app/index.jsx"
+      }
+    },
+    "visualizer": {
+      "type": "@nanoservice-ts/workflow-viz",
+      "name": "Workflow Visualizer",
+      "inputs": {
+        "workflow_path": "./workflows/json/complex-workflow.json",
+        "title": "Complex Workflow Visualization"
+      }
+    }
+  },
+  "edges": [
+    {
+      "from": "start",
+      "to": "filter"
+    },
+    {
+      "from": "filter",
+      "to": "process_many",
+      "condition": "true"
+    },
+    {
+      "from": "filter",
+      "to": "process_few",
+      "condition": "false"
+    }
+  ],
+  "triggers": [
+    {
+      "type": "http",
+      "path": "/complex",
+      "method": "GET",
+      "node": "start"
+    },
+    {
+      "type": "http",
+      "path": "/complex/visualize",
+      "method": "GET",
+      "node": "visualizer"
+    }
+  ]
+}

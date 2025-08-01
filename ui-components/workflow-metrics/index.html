@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blok Workflow Metrics Dashboard</title>
+    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/index.min.js"></script>
+    <style>
+        body, html, #root {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div id="root" class="w-full h-screen"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // Sample metrics data
+        const sampleMetrics = {
+            summary: {
+                totalExecutions: 1245,
+                successRate: 94.2,
+                avgExecutionTime: 1.8,
+                activeWorkflows: 12,
+                totalNodes: 87,
+                mostUsedNode: 'HTTP Request'
+            },
+            timeDistribution: [
+                { date: '2023-06-01', executions: 35, avgTime: 1.7, successRate: 92.5 },
+                { date: '2023-06-02', executions: 42, avgTime: 1.6, successRate: 95.1 },
+                { date: '2023-06-03', executions: 38, avgTime: 1.9, successRate: 93.8 },
+                { date: '2023-06-04', executions: 45, avgTime: 1.7, successRate: 94.2 },
+                { date: '2023-06-05', executions: 50, avgTime: 1.8, successRate: 96.0 },
+                { date: '2023-06-06', executions: 48, avgTime: 1.5, successRate: 95.5 },
+                { date: '2023-06-07', executions: 52, avgTime: 1.6, successRate: 94.8 }
+            ],
+            topWorkflows: [
+                { name: 'Countries API', executions: 245, avgTime: 1.2, successRate: 98.2 },
+                { name: 'Weather Service', executions: 198, avgTime: 1.5, successRate: 96.5 },
+                { name: 'User Authentication', executions: 156, avgTime: 0.8, successRate: 99.1 },
+                { name: 'Data Processing', executions: 142, avgTime: 2.4, successRate: 92.3 },
+                { name: 'Email Notifications', executions: 128, avgTime: 1.1, successRate: 97.8 }
+            ],
+            nodePerformance: [
+                { name: 'HTTP Request', executions: 876, avgTime: 0.9, errorRate: 3.2 },
+                { name: 'Database Query', executions: 654, avgTime: 1.2, errorRate: 2.8 },
+                { name: 'File Processing', executions: 432, avgTime: 2.1, errorRate: 4.5 },
+                { name: 'Email Sending', executions: 321, avgTime: 0.7, errorRate: 1.9 },
+                { name: 'Data Transformation', executions: 298, avgTime: 0.5, errorRate: 1.2 }
+            ],
+            errorDistribution: [
+                { type: 'API Connection', count: 28, percentage: 38.4 },
+                { type: 'Timeout', count: 18, percentage: 24.7 },
+                { type: 'Data Validation', count: 12, percentage: 16.4 },
+                { type: 'Authentication', count: 9, percentage: 12.3 },
+                { type: 'Other', count: 6, percentage: 8.2 }
+            ]
+        };
+
+        function WorkflowMetrics() {
+            const [metrics, setMetrics] = useState(sampleMetrics);
+            const [timeRange, setTimeRange] = useState('week');
+            const [selectedMetric, setSelectedMetric] = useState('executions');
+            
+            const executionsChartRef = useRef(null);
+            const successRateChartRef = useRef(null);
+            const topWorkflowsChartRef = useRef(null);
+            const nodePerformanceChartRef = useRef(null);
+            const errorDistributionChartRef = useRef(null);
+            
+            const executionsChart = useRef(null);
+            const successRateChart = useRef(null);
+            const topWorkflowsChart = useRef(null);
+            const nodePerformanceChart = useRef(null);
+            const errorDistributionChart = useRef(null);
+
+            useEffect(() => {
+                // In a real application, you would fetch data from an API here
+                // For now, we'll use the sample data
+                setMetrics(sampleMetrics);
+            }, []);
+
+            useEffect(() => {
+                renderExecutionsChart();
+                renderSuccessRateChart();
+                renderTopWorkflowsChart();
+                renderNodePerformanceChart();
+                renderErrorDistributionChart();
+            }, [metrics, timeRange, selectedMetric]);
+
+            const renderExecutionsChart = () => {
+                if (executionsChartRef.current) {
+                    // Destroy existing chart if it exists
+                    if (executionsChart.current) {
+                        executionsChart.current.destroy();
+                    }
+
+                    const ctx = executionsChartRef.current.getContext('2d');
+                    
+                    // Prepare data for the chart
+                    const labels = metrics.timeDistribution.map(item => {
+                        const date = new Date(item.date);
+                        return `${date.getMonth() + 1}/${date.getDate()}`;
+                    });
+                    const data = metrics.timeDistribution.map(item => item.executions);
+
+                    executionsChart.current = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Executions',
+                                data: data,
+                                backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                                borderColor: 'rgba(59, 130, 246, 1)',
+                                borderWidth: 2,
+                                tension: 0.3,
+                                fill: true
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    title: {
+                                        display: true,
+                                        text: 'Number of Executions'
+                                    }
+                                },
+                                x: {
+                                    title: {
+                                        display: true,
+                                        text: 'Date'
+                                    }
+                                }
+                            },
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: 'Workflow Executions Over Time',
+                                    font: {
+                                        size: 16
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            };
+
+            const renderSuccessRateChart = () => {
+                if (successRateChartRef.current) {
+                    // Destroy existing chart if it exists
+                    if (successRateChart.current) {
+                        successRateChart.current.destroy();
+                    }
+
+                    const ctx = successRateChartRef.current.getContext('2d');
+                    
+                    // Prepare data for the chart
+                    const labels = metrics.timeDistribution.map(item => {
+                        const date = new Date(item.date);
+                        return `${date.getMonth() + 1}/${date.getDate()}`;
+                    });
+                    const data = metrics.timeDistribution.map(item => item.successRate);
+
+                    successRateChart.current = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Success Rate (%)',
+                                data: data,
+                                backgroundColor: 'rgba(34, 197, 94, 0.2)',
+                                borderColor: 'rgba(34, 197, 94, 1)',
+                                borderWidth: 2,
+                                tension: 0.3,
+                                fill: true
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    min: Math.min(...data) > 10 ? Math.min(...data) - 10 : 0,
+                                    max: 100,
+                                    title: {
+                                        display: true,
+                                        text: 'Success Rate (%)'
+                                    }
+                                },
+                                x: {
+                                    title: {
+                                        display: true,
+                                        text: 'Date'
+                                    }
+                                }
+                            },
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: 'Workflow Success Rate Over Time',
+                                    font: {
+                                        size: 16
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            };
+
+            const renderTopWorkflowsChart = () => {
+                if (topWorkflowsChartRef.current) {
+                    // Destroy existing chart if it exists
+                    if (topWorkflowsChart.current) {
+                        topWorkflowsChart.current.destroy();
+                    }
+
+                    const ctx = topWorkflowsChartRef.current.getContext('2d');
+                    
+                    // Prepare data for the chart
+                    const labels = metrics.topWorkflows.map(item => item.name);
+                    let data;
+                    let label;
+                    let color;
+                    
+                    if (selectedMetric === 'executions') {
+                        data = metrics.topWorkflows.map(item => item.executions);
+                        label = 'Executions';
+                        color = 'rgba(59, 130, 246, 0.8)';
+                    } else if (selectedMetric === 'avgTime') {
+                        data = metrics.topWorkflows.map(item => item.avgTime);
+                        label = 'Avg. Execution Time (s)';
+                        color = 'rgba(245, 158, 11, 0.8)';
+                    } else {
+                        data = metrics.topWorkflows.map(item => item.successRate);
+                        label = 'Success Rate (%)';
+                        color = 'rgba(34, 197, 94, 0.8)';
+                    }
+
+                    topWorkflowsChart.current = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: label,
+                                data: data,
+                                backgroundColor: color,
+                                borderColor: color.replace('0.8', '1'),
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            indexAxis: 'y',
+                            scales: {
+                                x: {
+                                    beginAtZero: true
+                                }
+                            },
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: 'Top Workflows by ' + (selectedMetric === 'executions' ? 'Execution Count' : 
+                                                              selectedMetric === 'avgTime' ? 'Average Execution Time' : 
+                                                              'Success Rate'),
+                                    font: {
+                                        size: 16
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            };
+
+            const renderNodePerformanceChart = () => {
+                if (nodePerformanceChartRef.current) {
+                    // Destroy existing chart if it exists
+                    if (nodePerformanceChart.current) {
+                        nodePerformanceChart.current.destroy();
+                    }
+
+                    const ctx = nodePerformanceChartRef.current.getContext('2d');
+                    
+                    // Prepare data for the chart
+                    const labels = metrics.nodePerformance.map(item => item.name);
+                    const executionsData = metrics.nodePerformance.map(item => item.executions);
+                    const avgTimeData = metrics.nodePerformance.map(item => item.avgTime);
+
+                    nodePerformanceChart.current = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [
+                                {
+                                    label: 'Executions',
+                                    data: executionsData,
+                                    backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                                    borderColor: 'rgba(59, 130, 246, 1)',
+                                    borderWidth: 1,
+                                    yAxisID: 'y'
+                                },
+                                {
+                                    label: 'Avg. Execution Time (s)',
+                                    data: avgTimeData,
+                                    backgroundColor: 'rgba(245, 158, 11, 0.8)',
+                                    borderColor: 'rgba(245, 158, 11, 1)',
+                                    borderWidth: 1,
+                                    yAxisID: 'y1'
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    type: 'linear',
+                                    display: true,
+                                    position: 'left',
+                                    title: {
+                                        display: true,
+                                        text: 'Executions'
+                                    }
+                                },
+                                y1: {
+                                    type: 'linear',
+                                    display: true,
+                                    position: 'right',
+                                    grid: {
+                                        drawOnChartArea: false
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: 'Avg. Time (s)'
+                                    }
+                                }
+                            },
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: 'Node Performance Metrics',
+                                    font: {
+                                        size: 16
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            };
+
+            const renderErrorDistributionChart = () => {
+                if (errorDistributionChartRef.current) {
+                    // Destroy existing chart if it exists
+                    if (errorDistributionChart.current) {
+                        errorDistributionChart.current.destroy();
+                    }
+
+                    const ctx = errorDistributionChartRef.current.getContext('2d');
+                    
+                    // Prepare data for the chart
+                    const labels = metrics.errorDistribution.map(item => item.type);
+                    const data = metrics.errorDistribution.map(item => item.count);
+                    const backgroundColors = [
+                        'rgba(239, 68, 68, 0.8)',
+                        'rgba(245, 158, 11, 0.8)',
+                        'rgba(59, 130, 246, 0.8)',
+                        'rgba(168, 85, 247, 0.8)',
+                        'rgba(107, 114, 128, 0.8)'
+                    ];
+
+                    errorDistributionChart.current = new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                data: data,
+                                backgroundColor: backgroundColors,
+                                borderColor: backgroundColors.map(color => color.replace('0.8', '1')),
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: 'Error Distribution by Type',
+                                    font: {
+                                        size: 16
+                                    }
+                                },
+                                legend: {
+                                    position: 'right'
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            const item = metrics.errorDistribution[context.dataIndex];
+                                            return `${item.type}: ${item.count} (${item.percentage}%)`;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            };
+
+            return (
+                <div className="w-full h-full bg-gray-50">
+                    <div className="flex flex-col h-full">
+                        <div className="bg-indigo-600 text-white p-4">
+                            <h1 className="text-2xl font-bold">Workflow Metrics Dashboard</h1>
+                            <p className="text-sm opacity-80">Analyze workflow performance and metrics</p>
+                        </div>
+                        
+                        <div className="flex-grow p-4 overflow-auto">
+                            {/* Summary Cards */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
+                                <div className="bg-white p-4 rounded-lg shadow">
+                                    <div className="text-sm text-gray-500 mb-1">Total Executions</div>
+                                    <div className="text-2xl font-bold text-indigo-600">{metrics.summary.totalExecutions.toLocaleString()}</div>
+                                </div>
+                                
+                                <div className="bg-white p-4 rounded-lg shadow">
+                                    <div className="text-sm text-gray-500 mb-1">Success Rate</div>
+                                    <div className="text-2xl font-bold text-green-600">{metrics.summary.successRate}%</div>
+                                </div>
+                                
+                                <div className="bg-white p-4 rounded-lg shadow">
+                                    <div className="text-sm text-gray-500 mb-1">Avg. Execution Time</div>
+                                    <div className="text-2xl font-bold text-amber-600">{metrics.summary.avgExecutionTime}s</div>
+                                </div>
+                                
+                                <div className="bg-white p-4 rounded-lg shadow">
+                                    <div className="text-sm text-gray-500 mb-1">Active Workflows</div>
+                                    <div className="text-2xl font-bold text-blue-600">{metrics.summary.activeWorkflows}</div>
+                                </div>
+                                
+                                <div className="bg-white p-4 rounded-lg shadow">
+                                    <div className="text-sm text-gray-500 mb-1">Total Nodes</div>
+                                    <div className="text-2xl font-bold text-purple-600">{metrics.summary.totalNodes}</div>
+                                </div>
+                                
+                                <div className="bg-white p-4 rounded-lg shadow">
+                                    <div className="text-sm text-gray-500 mb-1">Most Used Node</div>
+                                    <div className="text-xl font-bold text-gray-800 truncate">{metrics.summary.mostUsedNode}</div>
+                                </div>
+                            </div>
+                            
+                            {/* Time Range Selector */}
+                            <div className="flex justify-end mb-4">
+                                <div className="inline-flex rounded-md shadow-sm">
+                                    <button
+                                        type="button"
+                                        className={`px-4 py-2 text-sm font-medium rounded-l-md ${timeRange === 'day' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+                                        onClick={() => setTimeRange('day')}
+                                    >
+                                        Day
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className={`px-4 py-2 text-sm font-medium ${timeRange === 'week' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+                                        onClick={() => setTimeRange('week')}
+                                    >
+                                        Week
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className={`px-4 py-2 text-sm font-medium ${timeRange === 'month' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+                                        onClick={() => setTimeRange('month')}
+                                    >
+                                        Month
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className={`px-4 py-2 text-sm font-medium rounded-r-md ${timeRange === 'year' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+                                        onClick={() => setTimeRange('year')}
+                                    >
+                                        Year
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            {/* Charts - First Row */}
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+                                <div className="bg-white p-4 rounded-lg shadow">
+                                    <div className="h-64">
+                                        <canvas ref={executionsChartRef}></canvas>
+                                    </div>
+                                </div>
+                                
+                                <div className="bg-white p-4 rounded-lg shadow">
+                                    <div className="h-64">
+                                        <canvas ref={successRateChartRef}></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {/* Charts - Second Row */}
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+                                <div className="bg-white p-4 rounded-lg shadow">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h2 className="text-lg font-semibold">Top Workflows</h2>
+                                        <div className="inline-flex rounded-md shadow-sm">
+                                            <button
+                                                type="button"
+                                                className={`px-3 py-1 text-xs font-medium rounded-l-md ${selectedMetric === 'executions' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+                                                onClick={() => setSelectedMetric('executions')}
+                                            >
+                                                Executions
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className={`px-3 py-1 text-xs font-medium ${selectedMetric === 'avgTime' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+                                                onClick={() => setSelectedMetric('avgTime')}
+                                            >
+                                                Avg. Time
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className={`px-3 py-1 text-xs font-medium rounded-r-md ${selectedMetric === 'successRate' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+                                                onClick={() => setSelectedMetric('successRate')}
+                                            >
+                                                Success Rate
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div className="h-64">
+                                        <canvas ref={topWorkflowsChartRef}></canvas>
+                                    </div>
+                                </div>
+                                
+                                <div className="bg-white p-4 rounded-lg shadow">
+                                    <div className="h-64">
+                                        <canvas ref={nodePerformanceChartRef}></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {/* Charts - Third Row */}
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                <div className="bg-white p-4 rounded-lg shadow">
+                                    <div className="h-64">
+                                        <canvas ref={errorDistributionChartRef}></canvas>
+                                    </div>
+                                </div>
+                                
+                                <div className="bg-white p-4 rounded-lg shadow">
+                                    <h2 className="text-lg font-semibold mb-4">Node Performance Details</h2>
+                                    <div className="overflow-x-auto">
+                                        <table className="min-w-full divide-y divide-gray-200">
+                                            <thead className="bg-gray-50">
+                                                <tr>
+                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Node Type</th>
+                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Executions</th>
+                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Avg. Time (s)</th>
+                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Error Rate (%)</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="bg-white divide-y divide-gray-200">
+                                                {metrics.nodePerformance.map((node, index) => (
+                                                    <tr key={index}>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{node.name}</td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{node.executions.toLocaleString()}</td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{node.avgTime}</td>
+                                                        <td className="px-6 py-4 whitespace-nowrap">
+                                                            <div className="flex items-center">
+                                                                <span className={`px-2 py-1 text-xs font-semibold rounded-full ${node.errorRate < 2 ? 'bg-green-100 text-green-800' : node.errorRate < 5 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
+                                                                    {node.errorRate}%
+                                                                </span>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<WorkflowMetrics />, document.getElementById('root'));
+    </script>
+</body>
+</html>

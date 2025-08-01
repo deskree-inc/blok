@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blok Integrated Workflow Test</title>
+    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script src="https://unpkg.com/react-flow-renderer@9.7.4/dist/umd/index.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body, html, #root {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        .react-flow {
+            width: 100%;
+            height: 100%;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div id="root" class="w-full h-screen"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const { ReactFlow, Background, Controls, MiniMap } = ReactFlowRenderer;
+
+        // Complex workflow data from our JSON file
+        const complexWorkflow = {
+          "name": "Complex Workflow Example",
+          "description": "A more complex workflow with multiple nodes and connections for visualization testing",
+          "nodes": {
+            "start": {
+              "type": "@nanoservice-ts/api-call",
+              "name": "Fetch Countries",
+              "inputs": {
+                "url": "https://countriesnow.space/api/v0.1/countries/capital",
+                "method": "GET"
+              }
+            },
+            "filter": {
+              "type": "@nanoservice-ts/if-else",
+              "name": "Filter Countries",
+              "inputs": {
+                "condition": "{{start.response.data.length > 10}}"
+              }
+            },
+            "process_many": {
+              "type": "@nanoservice-ts/react",
+              "name": "Process Many Countries",
+              "inputs": {
+                "title": "Many Countries Found",
+                "react_app": "./app/index.jsx"
+              }
+            },
+            "process_few": {
+              "type": "@nanoservice-ts/react",
+              "name": "Process Few Countries",
+              "inputs": {
+                "title": "Few Countries Found",
+                "react_app": "./app/index.jsx"
+              }
+            },
+            "visualizer": {
+              "type": "@nanoservice-ts/workflow-viz",
+              "name": "Workflow Visualizer",
+              "inputs": {
+                "workflow_path": "./workflows/json/complex-workflow.json",
+                "title": "Complex Workflow Visualization"
+              }
+            }
+          },
+          "edges": [
+            {
+              "from": "start",
+              "to": "filter"
+            },
+            {
+              "from": "filter",
+              "to": "process_many",
+              "condition": "true"
+            },
+            {
+              "from": "filter",
+              "to": "process_few",
+              "condition": "false"
+            }
+          ],
+          "triggers": [
+            {
+              "type": "http",
+              "path": "/complex",
+              "method": "GET",
+              "node": "start"
+            },
+            {
+              "type": "http",
+              "path": "/complex/visualize",
+              "method": "GET",
+              "node": "visualizer"
+            }
+          ]
+        };
+
+        // Sample execution data for monitoring
+        const executionData = [
+            { id: 'exec-001', workflow: 'Complex Workflow Example', status: 'completed', duration: 1250, startTime: '2023-06-15T10:30:00Z', endTime: '2023-06-15T10:30:01.25Z' },
+            { id: 'exec-002', workflow: 'Complex Workflow Example', status: 'failed', duration: 850, startTime: '2023-06-15T11:45:00Z', endTime: '2023-06-15T11:45:00.85Z', error: 'API call timeout' },
+            { id: 'exec-003', workflow: 'Complex Workflow Example', status: 'completed', duration: 1100, startTime: '2023-06-15T13:20:00Z', endTime: '2023-06-15T13:20:01.1Z' },
+        ];
+
+        // Sample metrics data
+        const metricsData = {
+            totalExecutions: 156,
+            averageDuration: 980,
+            successRate: 94.2,
+            errorRate: 5.8,
+            nodePerformance: [
+                { node: 'start', avgDuration: 450 },
+                { node: 'filter', avgDuration: 120 },
+                { node: 'process_many', avgDuration: 380 },
+                { node: 'process_few', avgDuration: 350 },
+            ]
+        };
+
+        function IntegratedTest() {
+            const [activeTab, setActiveTab] = useState('visualization');
+            const [nodes, setNodes] = useState([]);
+            const [edges, setEdges] = useState([]);
+            const [workflow, setWorkflow] = useState(complexWorkflow);
+
+            useEffect(() => {
+                if (workflow && Object.keys(workflow).length > 0) {
+                    const { nodes: workflowNodes, edges: workflowEdges } = processWorkflow(workflow);
+                    setNodes(workflowNodes);
+                    setEdges(workflowEdges);
+                }
+            }, [workflow]);
+
+            // Process workflow JSON into nodes and edges for ReactFlow
+            const processWorkflow = (workflow) => {
+                const nodes = [];
+                const edges = [];
+                const nodePositions = {};
+                
+                // Calculate positions for nodes in a grid layout
+                const calculatePositions = () => {
+                    const nodeIds = Object.keys(workflow.nodes || {});
+                    const gridSize = Math.ceil(Math.sqrt(nodeIds.length));
+                    const spacing = 250;
+                    
+                    nodeIds.forEach((nodeId, index) => {
+                        const row = Math.floor(index / gridSize);
+                        const col = index % gridSize;
+                        nodePositions[nodeId] = {
+                            x: col * spacing + 50,
+                            y: row * spacing + 50
+                        };
+                    });
+                };
+                
+                calculatePositions();
+                
+                // Create nodes
+                if (workflow.nodes) {
+                    Object.entries(workflow.nodes).forEach(([nodeId, nodeData]) => {
+                        const position = nodePositions[nodeId] || { x: 0, y: 0 };
+                        nodes.push({
+                            id: nodeId,
+                            type: 'default',
+                            data: { 
+                                label: nodeData.name || nodeId,
+                                nodeType: nodeData.type || 'Unknown',
+                                details: nodeData
+                            },
+                            position,
+                            style: {
+                                background: '#fff',
+                                border: '1px solid #ddd',
+                                borderRadius: '5px',
+                                padding: '10px',
+                                width: 180,
+                            }
+                        });
+                    });
+                }
+                
+                // Create edges
+                if (workflow.edges) {
+                    workflow.edges.forEach((edge, index) => {
+                        edges.push({
+                            id: `e${index}`,
+                            source: edge.from,
+                            target: edge.to,
+                            animated: true,
+                            style: { stroke: '#3b82f6' },
+                            label: edge.condition || ''
+                        });
+                    });
+                }
+                
+                return { nodes, edges };
+            };
+
+            // Tab components
+            const VisualizationTab = () => (
+                <div className="h-full">
+                    <ReactFlow
+                        nodes={nodes}
+                        edges={edges}
+                        fitView
+                        attributionPosition="bottom-right"
+                    >
+                        <Background color="#aaa" gap={16} />
+                        <Controls />
+                        <MiniMap
+                            nodeStrokeColor={(n) => '#fff'}
+                            nodeColor={(n) => '#3b82f6'}
+                        />
+                    </ReactFlow>
+                </div>
+            );
+
+            const MonitoringTab = () => (
+                <div className="p-6">
+                    <h2 className="text-2xl font-bold mb-6">Workflow Execution Monitoring</h2>
+                    
+                    <div className="mb-8 grid grid-cols-4 gap-4">
+                        <div className="bg-blue-100 p-4 rounded-lg">
+                            <h3 className="text-lg font-semibold text-blue-800">Total Executions</h3>
+                            <p className="text-3xl font-bold">{metricsData.totalExecutions}</p>
+                        </div>
+                        <div className="bg-green-100 p-4 rounded-lg">
+                            <h3 className="text-lg font-semibold text-green-800">Success Rate</h3>
+                            <p className="text-3xl font-bold">{metricsData.successRate}%</p>
+                        </div>
+                        <div className="bg-red-100 p-4 rounded-lg">
+                            <h3 className="text-lg font-semibold text-red-800">Error Rate</h3>
+                            <p className="text-3xl font-bold">{metricsData.errorRate}%</p>
+                        </div>
+                        <div className="bg-purple-100 p-4 rounded-lg">
+                            <h3 className="text-lg font-semibold text-purple-800">Avg Duration</h3>
+                            <p className="text-3xl font-bold">{metricsData.averageDuration}ms</p>
+                        </div>
+                    </div>
+                    
+                    <div className="mb-8">
+                        <h3 className="text-xl font-bold mb-4">Recent Executions</h3>
+                        <table className="min-w-full bg-white border border-gray-300">
+                            <thead>
+                                <tr className="bg-gray-100">
+                                    <th className="py-2 px-4 border-b">ID</th>
+                                    <th className="py-2 px-4 border-b">Status</th>
+                                    <th className="py-2 px-4 border-b">Duration</th>
+                                    <th className="py-2 px-4 border-b">Start Time</th>
+                                    <th className="py-2 px-4 border-b">End Time</th>
+                                    <th className="py-2 px-4 border-b">Error</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {executionData.map(execution => (
+                                    <tr key={execution.id} className="hover:bg-gray-50">
+                                        <td className="py-2 px-4 border-b">{execution.id}</td>
+                                        <td className="py-2 px-4 border-b">
+                                            <span className={`px-2 py-1 rounded-full text-xs ${execution.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                                {execution.status}
+                                            </span>
+                                        </td>
+                                        <td className="py-2 px-4 border-b">{execution.duration}ms</td>
+                                        <td className="py-2 px-4 border-b">{new Date(execution.startTime).toLocaleString()}</td>
+                                        <td className="py-2 px-4 border-b">{new Date(execution.endTime).toLocaleString()}</td>
+                                        <td className="py-2 px-4 border-b text-red-600">{execution.error || '-'}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+
+            const DocumentationTab = () => (
+                <div className="p-6">
+                    <h2 className="text-2xl font-bold mb-6">Workflow Documentation</h2>
+                    
+                    <div className="bg-white p-6 rounded-lg shadow-md">
+                        <h3 className="text-xl font-bold mb-4">{workflow.name}</h3>
+                        <p className="text-gray-700 mb-6">{workflow.description}</p>
+                        
+                        <div className="mb-6">
+                            <h4 className="text-lg font-semibold mb-2">Nodes</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {Object.entries(workflow.nodes).map(([nodeId, nodeData]) => (
+                                    <div key={nodeId} className="border rounded-md p-4">
+                                        <h5 className="font-bold">{nodeData.name} <span className="text-gray-500 text-sm">({nodeId})</span></h5>
+                                        <p className="text-sm text-gray-600">Type: {nodeData.type}</p>
+                                        <div className="mt-2">
+                                            <h6 className="text-sm font-semibold">Inputs:</h6>
+                                            <pre className="bg-gray-100 p-2 rounded text-xs mt-1">
+                                                {JSON.stringify(nodeData.inputs, null, 2)}
+                                            </pre>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        
+                        <div className="mb-6">
+                            <h4 className="text-lg font-semibold mb-2">Edges</h4>
+                            <table className="min-w-full border border-gray-300">
+                                <thead>
+                                    <tr className="bg-gray-100">
+                                        <th className="py-2 px-4 border-b">From</th>
+                                        <th className="py-2 px-4 border-b">To</th>
+                                        <th className="py-2 px-4 border-b">Condition</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {workflow.edges.map((edge, index) => (
+                                        <tr key={index} className="hover:bg-gray-50">
+                                            <td className="py-2 px-4 border-b">{edge.from}</td>
+                                            <td className="py-2 px-4 border-b">{edge.to}</td>
+                                            <td className="py-2 px-4 border-b">{edge.condition || '-'}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div>
+                            <h4 className="text-lg font-semibold mb-2">Triggers</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {workflow.triggers.map((trigger, index) => (
+                                    <div key={index} className="border rounded-md p-4">
+                                        <h5 className="font-bold">{trigger.type.toUpperCase()} Trigger</h5>
+                                        <p className="text-sm text-gray-600">Path: {trigger.path}</p>
+                                        <p className="text-sm text-gray-600">Method: {trigger.method}</p>
+                                        <p className="text-sm text-gray-600">Target Node: {trigger.node}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+
+            return (
+                <div className="w-full h-full flex flex-col">
+                    <div className="bg-blue-600 text-white p-4">
+                        <h1 className="text-2xl font-bold">Blok Integrated Workflow Test</h1>
+                        <p className="text-sm opacity-80">Testing multiple workflow components together</p>
+                    </div>
+                    
+                    <div className="bg-gray-100 border-b border-gray-300">
+                        <div className="flex">
+                            <button 
+                                className={`px-4 py-2 font-medium ${activeTab === 'visualization' ? 'bg-white border-t-2 border-blue-500' : 'text-gray-600 hover:bg-gray-200'}`}
+                                onClick={() => setActiveTab('visualization')}
+                            >
+                                Visualization
+                            </button>
+                            <button 
+                                className={`px-4 py-2 font-medium ${activeTab === 'monitoring' ? 'bg-white border-t-2 border-blue-500' : 'text-gray-600 hover:bg-gray-200'}`}
+                                onClick={() => setActiveTab('monitoring')}
+                            >
+                                Monitoring
+                            </button>
+                            <button 
+                                className={`px-4 py-2 font-medium ${activeTab === 'documentation' ? 'bg-white border-t-2 border-blue-500' : 'text-gray-600 hover:bg-gray-200'}`}
+                                onClick={() => setActiveTab('documentation')}
+                            >
+                                Documentation
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div className="flex-grow overflow-auto">
+                        {activeTab === 'visualization' && <VisualizationTab />}
+                        {activeTab === 'monitoring' && <MonitoringTab />}
+                        {activeTab === 'documentation' && <DocumentationTab />}
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<IntegratedTest />, document.getElementById('root'));
+    </script>
+</body>
+</html>

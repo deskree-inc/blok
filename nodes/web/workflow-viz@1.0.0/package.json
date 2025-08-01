@@ -1,0 +1,36 @@
+{
+  "name": "@nanoservice-ts/workflow-viz",
+  "version": "1.0.0",
+  "description": "A node for visualizing Blok workflows",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "test:dev": "vitest",
+    "test": "vitest run",
+    "build:ts": "rm -rf dist && tsc",
+    "build:dev": "nodemon",
+    "build": "npm run build:ts && cp index.html dist/index.html"
+  },
+  "keywords": [
+    "nanoservice",
+    "workflow",
+    "visualization",
+    "react"
+  ],
+  "author": "Deskree Technologies Inc.",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@nanoservice-ts/runner": "workspace:*",
+    "@nanoservice-ts/shared": "workspace:*",
+    "@nanoservice-ts/helper": "workspace:*",
+    "ejs": "^3.1.10"
+  },
+  "devDependencies": {
+    "@types/ejs": "^3.1.5",
+    "@types/node": "^22.13.4",
+    "nodemon": "^3.1.9",
+    "typescript": "^5.1.3",
+    "vitest": "^3.1.4"
+  },
+  "private": false
+}

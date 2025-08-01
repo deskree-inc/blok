@@ -1,0 +1,23 @@
+{
+  "name": "Self-Visualizing Workflow",
+  "description": "A workflow that visualizes itself",
+  "nodes": {
+    "visualizer": {
+      "type": "@nanoservice-ts/workflow-viz",
+      "name": "Workflow Visualizer",
+      "inputs": {
+        "workflow_path": "./workflows/json/self-visualizing.json",
+        "title": "Self-Visualizing Workflow"
+      }
+    }
+  },
+  "edges": [],
+  "triggers": [
+    {
+      "type": "http",
+      "path": "/self-visualize",
+      "method": "GET",
+      "node": "visualizer"
+    }
+  ]
+}

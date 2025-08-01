@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blok Workflow Test</title>
+    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script src="https://unpkg.com/react-flow-renderer@9.7.4/dist/umd/index.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body, html, #root {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        .react-flow {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="root" class="w-full h-screen"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const { ReactFlow, Background, Controls, MiniMap } = ReactFlowRenderer;
+
+        // Complex workflow data from our JSON file
+        const complexWorkflow = {
+          "name": "Complex Workflow Example",
+          "description": "A more complex workflow with multiple nodes and connections for visualization testing",
+          "nodes": {
+            "start": {
+              "type": "@nanoservice-ts/api-call",
+              "name": "Fetch Countries",
+              "inputs": {
+                "url": "https://countriesnow.space/api/v0.1/countries/capital",
+                "method": "GET"
+              }
+            },
+            "filter": {
+              "type": "@nanoservice-ts/if-else",
+              "name": "Filter Countries",
+              "inputs": {
+                "condition": "{{start.response.data.length > 10}}"
+              }
+            },
+            "process_many": {
+              "type": "@nanoservice-ts/react",
+              "name": "Process Many Countries",
+              "inputs": {
+                "title": "Many Countries Found",
+                "react_app": "./app/index.jsx"
+              }
+            },
+            "process_few": {
+              "type": "@nanoservice-ts/react",
+              "name": "Process Few Countries",
+              "inputs": {
+                "title": "Few Countries Found",
+                "react_app": "./app/index.jsx"
+              }
+            },
+            "visualizer": {
+              "type": "@nanoservice-ts/workflow-viz",
+              "name": "Workflow Visualizer",
+              "inputs": {
+                "workflow_path": "./workflows/json/complex-workflow.json",
+                "title": "Complex Workflow Visualization"
+              }
+            }
+          },
+          "edges": [
+            {
+              "from": "start",
+              "to": "filter"
+            },
+            {
+              "from": "filter",
+              "to": "process_many",
+              "condition": "true"
+            },
+            {
+              "from": "filter",
+              "to": "process_few",
+              "condition": "false"
+            }
+          ],
+          "triggers": [
+            {
+              "type": "http",
+              "path": "/complex",
+              "method": "GET",
+              "node": "start"
+            },
+            {
+              "type": "http",
+              "path": "/complex/visualize",
+              "method": "GET",
+              "node": "visualizer"
+            }
+          ]
+        };
+
+        function WorkflowTest() {
+            const [nodes, setNodes] = useState([]);
+            const [edges, setEdges] = useState([]);
+            const [workflow, setWorkflow] = useState(complexWorkflow);
+
+            useEffect(() => {
+                if (workflow && Object.keys(workflow).length > 0) {
+                    const { nodes: workflowNodes, edges: workflowEdges } = processWorkflow(workflow);
+                    setNodes(workflowNodes);
+                    setEdges(workflowEdges);
+                }
+            }, [workflow]);
+
+            // Process workflow JSON into nodes and edges for ReactFlow
+            const processWorkflow = (workflow) => {
+                const nodes = [];
+                const edges = [];
+                const nodePositions = {};
+                
+                // Calculate positions for nodes in a grid layout
+                const calculatePositions = () => {
+                    const nodeIds = Object.keys(workflow.nodes || {});
+                    const gridSize = Math.ceil(Math.sqrt(nodeIds.length));
+                    const spacing = 250;
+                    
+                    nodeIds.forEach((nodeId, index) => {
+                        const row = Math.floor(index / gridSize);
+                        const col = index % gridSize;
+                        nodePositions[nodeId] = {
+                            x: col * spacing + 50,
+                            y: row * spacing + 50
+                        };
+                    });
+                };
+                
+                calculatePositions();
+                
+                // Create nodes
+                if (workflow.nodes) {
+                    Object.entries(workflow.nodes).forEach(([nodeId, nodeData]) => {
+                        const position = nodePositions[nodeId] || { x: 0, y: 0 };
+                        nodes.push({
+                            id: nodeId,
+                            type: 'default',
+                            data: { 
+                                label: nodeData.name || nodeId,
+                                nodeType: nodeData.type || 'Unknown',
+                                details: nodeData
+                            },
+                            position,
+                            style: {
+                                background: '#fff',
+                                border: '1px solid #ddd',
+                                borderRadius: '5px',
+                                padding: '10px',
+                                width: 180,
+                            }
+                        });
+                    });
+                }
+                
+                // Create edges
+                if (workflow.edges) {
+                    workflow.edges.forEach((edge, index) => {
+                        edges.push({
+                            id: `e${index}`,
+                            source: edge.from,
+                            target: edge.to,
+                            animated: true,
+                            style: { stroke: '#3b82f6' },
+                            label: edge.condition || ''
+                        });
+                    });
+                }
+                
+                return { nodes, edges };
+            };
+
+            // Custom node renderer
+            const CustomNode = ({ data }) => {
+                return (
+                    <div className="p-3 rounded-md shadow-md bg-white border-2 border-blue-500">
+                        <div className="font-bold text-lg">{data.label}</div>
+                        <div className="text-xs text-gray-500">{data.nodeType}</div>
+                    </div>
+                );
+            };
+
+            const nodeTypes = {
+                custom: CustomNode,
+            };
+
+            return (
+                <div className="w-full h-full">
+                    {workflow ? (
+                        <div className="flex flex-col h-full">
+                            <div className="bg-blue-600 text-white p-4">
+                                <h1 className="text-2xl font-bold">{workflow.name || 'Workflow Test'}</h1>
+                                <p className="text-sm opacity-80">{workflow.description || 'Testing the workflow visualization'}</p>
+                            </div>
+                            
+                            <div className="flex-grow">
+                                <ReactFlow
+                                    nodes={nodes}
+                                    edges={edges}
+                                    nodeTypes={nodeTypes}
+                                    fitView
+                                    attributionPosition="bottom-right"
+                                >
+                                    <Background color="#aaa" gap={16} />
+                                    <Controls />
+                                    <MiniMap
+                                        nodeStrokeColor={(n) => '#fff'}
+                                        nodeColor={(n) => '#3b82f6'}
+                                    />
+                                </ReactFlow>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="flex items-center justify-center h-full">
+                            <div className="bg-white p-8 rounded-lg shadow-md text-center">
+                                <h2 className="text-2xl font-bold text-gray-800 mb-4">No Workflow Data</h2>
+                                <p className="text-gray-600">
+                                    Please provide a valid workflow JSON file path to visualize.
+                                </p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        ReactDOM.render(<WorkflowTest />, document.getElementById('root'));
+    </script>
+</body>
+</html>
