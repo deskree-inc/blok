@@ -7,7 +7,7 @@
 	},
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
-	"repository": "https://github.com/deskree-inc/nanoservice-ts-shared-lib.git",
+	"repository": "https://github.com/deskree-inc/blok-ts.git",
 	"author": "Deskree Technologies Inc.",
 	"license": "Apache-2.0",
 	"scripts": {

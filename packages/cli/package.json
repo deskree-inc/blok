@@ -1,9 +1,9 @@
 {
 	"name": "blokctl",
-	"version": "0.1.14",
+	"version": "0.1.0",
 	"author": "Deskree Technologies Inc.",
 	"license": "Apache-2.0",
-	"description": "cli for blok",
+	"description": "CLI for Blok - Workflow-based backend development platform",
 	"engines": {
 		"node": ">=18.0.0"
 	},
@@ -26,7 +26,15 @@
 		"dev": "npm run uninstall:local && npm run install:local && npm run build:dev && blokctl --help",
 		"postbuild": "cp -r ./src/commands/monitor/static ./dist/commands/monitor/"
 	},
-	"keywords": ["blokctl", "cli", "nanoservice", "nanoservice-ts"],
+	"keywords": [
+		"blokctl",
+		"cli",
+		"blok",
+		"blok-ts",
+		"workflow",
+		"backend",
+		"orchestration"
+	],
 	"dependencies": {
 		"@clack/prompts": "^0.9.1",
 		"chalk": "^5.4.1",

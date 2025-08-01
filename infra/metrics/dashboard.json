@@ -1080,7 +1080,7 @@
 					},
 					"direction": "backward",
 					"editorMode": "code",
-					"expr": "{service_name=\"nanoservice-http\"} | json | level=\"info\"",
+					"expr": "{service_name=\"blok-http\"} | json | level=\"info\"",
 					"queryType": "range",
 					"refId": "A"
 				}
@@ -1124,7 +1124,7 @@
 					},
 					"direction": "backward",
 					"editorMode": "code",
-					"expr": "{service_name=\"nanoservice-http\"} | json | level=\"error\"",
+					"expr": "{service_name=\"blok-http\"} | json | level=\"error\"",
 					"queryType": "range",
 					"refId": "A"
 				}

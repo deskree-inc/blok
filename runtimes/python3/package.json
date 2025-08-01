@@ -9,7 +9,7 @@
 	"scripts": {
 		"dev": "nodemon"
 	},
-	"keywords": ["nanoservice", "node"],
+	"keywords": ["blok", "python", "runtime", "node", "workflow"],
 	"author": "Marco A. Castillo Della Sera",
 	"license": "MIT",
 	"devDependencies": {

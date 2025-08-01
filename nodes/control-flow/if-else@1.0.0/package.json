@@ -1,7 +1,7 @@
 {
 	"name": "@blok-ts/if-else",
-	"version": "0.0.30",
-	"description": "nanoservice if-else",
+	"version": "0.1.0",
+	"description": "Blok conditional flow control node for workflow orchestration",
 	"engines": {
 		"node": ">=18.0.0"
 	},
