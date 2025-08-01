@@ -1,6 +1,13 @@
 packages:
-- "core/*"
-- "nodes/**/**"
-- "triggers/*"
-- "templates/**/**"
-- "packages/*"
+  - core/*
+  - nodes/**/**
+  - triggers/*
+  - templates/**/**
+  - packages/*
+
+onlyBuiltDependencies:
+  - '@biomejs/biome'
+  - '@bufbuild/buf'
+  - esbuild
+  - nx
+  - protobufjs

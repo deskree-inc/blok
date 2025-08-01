@@ -119,14 +119,34 @@
 		"global": {
 			"anchors": [
 				{
+					"anchor": "X",
+					"href": "https://x.com/blok_build",
+					"icon": "x"
+				},
+				{
+					"anchor": "GitHub",
+					"href": "https://github.com/deskree-inc",
+					"icon": "github"
+				},
+				{
+					"anchor": "LinkedIn",
+					"href": "https://www.linkedin.com/company/deskree",
+					"icon": "linkedin"
+				},
+				{
+					"anchor": "Reddit",
+					"href": "https://www.reddit.com/r/nanoservice",
+					"icon": "reddit"
+				},
+				{
 					"anchor": "Discord",
 					"href": "https://discord.gg/uFs9bYwfM9",
 					"icon": "discord"
 				},
 				{
-					"anchor": "X",
-					"href": "https://x.com/nanoservice_ts",
-					"icon": "x"
+					"anchor": "YouTube",
+					"href": "https://www.youtube.com/@deskree",
+					"icon": "youtube"
 				}
 			]
 		}
@@ -149,11 +169,12 @@
 	},
 	"footer": {
 		"socials": {
-			"x": "https://x.com/nanoservice_ts",
+			"x": "https://x.com/blok_build",
 			"github": "https://github.com/deskree-inc",
 			"linkedin": "https://linkedin.com/company/deskree",
-			"reddit": "https://www.reddit.com/r/nanoservice/",
-			"discord": "https://discord.gg/etgJcHSrR5"
+			"reddit": "https://www.reddit.com/r/nanoservice",
+			"discord": "https://discord.gg/etgJcHSrR5",
+			"youtube": "https://www.youtube.com/@deskree"
 		},
 		"links": [
 			{

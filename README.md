@@ -196,7 +196,7 @@ Distributed under the Apache License 2.0. See `LICENSE.txt` for more information
 
 Discord: [Blok](https://discord.gg/uFs9bYwfM9)
 
-X: [@nanoservice_ts](https://x.com/nanoservice_ts)
+X: [@nanoservice_ts](https://x.com/blok_build)
 
 Reddit: [r/nanoservice](https://www.reddit.com/r/nanoservice/)
 
