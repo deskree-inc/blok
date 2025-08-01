@@ -1,6 +1,10 @@
 #! /usr/bin/env node
+import child_process from "node:child_process";
 import os from "node:os";
+import util from "node:util";
+import * as p from "@clack/prompts";
 import fsExtra from "fs-extra";
+import color from "picocolors";
 import { createNode } from "./commands/create/node.js";
 import { createProject } from "./commands/create/project.js";
 import { createWorkflow } from "./commands/create/workflow.js";
@@ -23,6 +27,37 @@ import "./commands/config/index.js";
 import { Command } from "commander";
 
 const version = await getPackageVersion();
+const exec = util.promisify(child_process.exec);
+
+export const CLI_NAME = "nanoctl";
+
+const validateVersion = async (
+	currentVersion: string,
+): Promise<{ currentVersion: string; latestVersion: string; isLatest: boolean }> => {
+	const execResponse = await exec(`npm view ${CLI_NAME} version`);
+	const latestVersion = execResponse.stdout;
+	const [latestMajor, latestMinor, latestPatch] = latestVersion.split(".").map(Number);
+	const [currentMajor, currentMinor, currentPatch] = currentVersion.split(".").map(Number);
+
+	let isLatest = true;
+
+	if (
+		latestMajor > currentMajor ||
+		(latestMajor === currentMajor && latestMinor > currentMinor) ||
+		(latestMajor === currentMajor && latestMinor === currentMinor && latestPatch > currentPatch)
+	) {
+		p.log.warn(
+			`A new version of ${CLI_NAME} CLI is available.\nPlease update to the latest version.\nVersion:\t${color.red(currentVersion)} > ${color.green(latestVersion)}`,
+		);
+		isLatest = false;
+	}
+
+	return {
+		currentVersion,
+		latestVersion,
+		isLatest,
+	};
+};
 
 async function main() {
 	try {
@@ -37,6 +72,8 @@ async function main() {
 		});
 
 		program.version(`${version}`, "-v, --version").description(`Blok CLI ${version}`);
+
+		await validateVersion(version);
 
 		const create = new Command("create").description("Create a new nanoservice component");
 

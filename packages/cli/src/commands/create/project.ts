@@ -1,5 +1,4 @@
-import child_process from "node:child_process";
-import { spawn } from "node:child_process";
+import child_process, { spawn } from "node:child_process";
 import os from "node:os";
 import path from "node:path";
 import util from "node:util";
@@ -24,6 +23,7 @@ const exec = util.promisify(child_process.exec);
 const HOME_DIR = `${os.homedir()}/.nanoctl`;
 const GITHUB_REPO_LOCAL = `${HOME_DIR}/blok`;
 const GITHUB_REPO_REMOTE = "https://github.com/deskree-inc/blok.git";
+const GITHUB_REPO_RELEASE_TAG = "v0.0.1-beta.1";
 
 fsExtra.ensureDirSync(HOME_DIR);
 const options: Partial<SimpleGitOptions> = {
@@ -177,7 +177,11 @@ export async function createProject(opts: OptionValues, version: string, current
 		if (githubLocalExists) {
 			fsExtra.removeSync(GITHUB_REPO_LOCAL);
 		}
-		await git.clone(GITHUB_REPO_REMOTE, GITHUB_REPO_LOCAL);
+		if (GITHUB_REPO_RELEASE_TAG) {
+			await git.clone(GITHUB_REPO_REMOTE, GITHUB_REPO_LOCAL, ["--branch", GITHUB_REPO_RELEASE_TAG, "--depth", "1"]);
+		} else {
+			await git.clone(GITHUB_REPO_REMOTE, GITHUB_REPO_LOCAL);
+		}
 
 		if (!isDefault) s.message("Copying project files...");
 

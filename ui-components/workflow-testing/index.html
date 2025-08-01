@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blok Workflow Testing Interface</title>
+    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/monaco-editor@0.30.1/min/vs/loader.js"></script>
+    <style>
+        body, html, #root {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        .editor-container {
+            height: 400px;
+            border: 1px solid #ddd;
+            border-radius: 0.375rem;
+        }
+        .response-container {
+            height: 300px;
+            overflow: auto;
+            border: 1px solid #ddd;
+            border-radius: 0.375rem;
+            background-color: #f9fafb;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div id="root" class="w-full h-screen"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // Sample workflow data
+        const sampleWorkflows = [
+            { id: 'workflow-1', name: 'Countries API', description: 'Fetches and displays country data', endpoint: '/countries' },
+            { id: 'workflow-2', name: 'Weather Service', description: 'Gets weather information for a location', endpoint: '/weather' },
+            { id: 'workflow-3', name: 'User Authentication', description: 'Handles user login and registration', endpoint: '/auth' },
+            { id: 'workflow-4', name: 'Data Processing', description: 'Processes and transforms data', endpoint: '/process' },
+            { id: 'workflow-5', name: 'Email Notifications', description: 'Sends email notifications', endpoint: '/notify' },
+        ];
+
+        // Sample test templates
+        const testTemplates = [
+            {
+                name: 'Basic HTTP GET',
+                method: 'GET',
+                headers: {},
+                body: '',
+                description: 'Simple GET request to test endpoint availability'
+            },
+            {
+                name: 'POST with JSON',
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ key: 'value' }, null, 2),
+                description: 'POST request with JSON payload'
+            },
+            {
+                name: 'Authentication Test',
+                method: 'GET',
+                headers: { 'Authorization': 'Bearer YOUR_TOKEN_HERE' },
+                body: '',
+                description: 'Test endpoint with authentication'
+            },
+            {
+                name: 'Form Submission',
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'param1=value1&param2=value2',
+                description: 'Submit form data to endpoint'
+            }
+        ];
+
+        function WorkflowTesting() {
+            const [workflows, setWorkflows] = useState(sampleWorkflows);
+            const [selectedWorkflow, setSelectedWorkflow] = useState(null);
+            const [testConfig, setTestConfig] = useState({
+                method: 'GET',
+                url: '',
+                headers: {},
+                body: ''
+            });
+            const [testResponse, setTestResponse] = useState(null);
+            const [testHistory, setTestHistory] = useState([]);
+            const [loading, setLoading] = useState(false);
+            const [editorLoaded, setEditorLoaded] = useState(false);
+            const [activeTab, setActiveTab] = useState('request');
+            const [selectedTemplate, setSelectedTemplate] = useState(null);
+            
+            const headersEditorRef = useRef(null);
+            const bodyEditorRef = useRef(null);
+            const headersEditor = useRef(null);
+            const bodyEditor = useRef(null);
+
+            useEffect(() => {
+                // In a real application, you would fetch workflows from an API
+                setWorkflows(sampleWorkflows);
+            }, []);
+
+            useEffect(() => {
+                if (selectedWorkflow) {
+                    setTestConfig(prev => ({
+                        ...prev,
+                        url: `http://localhost:3000${selectedWorkflow.endpoint}`
+                    }));
+                }
+            }, [selectedWorkflow]);
+
+            useEffect(() => {
+                // Load Monaco Editor
+                if (!editorLoaded) {
+                    require.config({ paths: { 'vs': 'https://unpkg.com/monaco-editor@0.30.1/min/vs' }});
+                    require(['vs/editor/editor.main'], function() {
+                        initializeEditors();
+                        setEditorLoaded(true);
+                    });
+                }
+            }, []);
+
+            const initializeEditors = () => {
+                if (headersEditorRef.current && bodyEditorRef.current) {
+                    // Initialize headers editor
+                    headersEditor.current = monaco.editor.create(headersEditorRef.current, {
+                        value: JSON.stringify(testConfig.headers, null, 2),
+                        language: 'json',
+                        minimap: { enabled: false },
+                        automaticLayout: true,
+                        theme: 'vs-light',
+                        scrollBeyondLastLine: false,
+                        lineNumbers: 'on',
+                        fontSize: 14
+                    });
+
+                    // Initialize body editor
+                    bodyEditor.current = monaco.editor.create(bodyEditorRef.current, {
+                        value: testConfig.body,
+                        language: 'json',
+                        minimap: { enabled: false },
+                        automaticLayout: true,
+                        theme: 'vs-light',
+                        scrollBeyondLastLine: false,
+                        lineNumbers: 'on',
+                        fontSize: 14
+                    });
+
+                    // Add event listeners
+                    headersEditor.current.onDidChangeModelContent(() => {
+                        try {
+                            const headers = JSON.parse(headersEditor.current.getValue());
+                            setTestConfig(prev => ({ ...prev, headers }));
+                        } catch (e) {
+                            // Invalid JSON, ignore
+                        }
+                    });
+
+                    bodyEditor.current.onDidChangeModelContent(() => {
+                        setTestConfig(prev => ({ ...prev, body: bodyEditor.current.getValue() }));
+                    });
+                }
+            };
+
+            const applyTemplate = (template) => {
+                setSelectedTemplate(template);
+                setTestConfig(prev => ({
+                    ...prev,
+                    method: template.method,
+                    headers: template.headers,
+                    body: template.body
+                }));
+
+                // Update editors if they exist
+                if (headersEditor.current && bodyEditor.current) {
+                    headersEditor.current.setValue(JSON.stringify(template.headers, null, 2));
+                    bodyEditor.current.setValue(template.body);
+                }
+            };
+
+            const handleMethodChange = (method) => {
+                setTestConfig(prev => ({ ...prev, method }));
+            };
+
+            const handleUrlChange = (e) => {
+                setTestConfig(prev => ({ ...prev, url: e.target.value }));
+            };
+
+            const executeTest = () => {
+                setLoading(true);
+                setTestResponse(null);
+                
+                // In a real application, you would make an actual HTTP request
+                // For this demo, we'll simulate a response after a delay
+                setTimeout(() => {
+                    const timestamp = new Date().toISOString();
+                    const success = Math.random() > 0.2; // 80% success rate
+                    
+                    const response = {
+                        timestamp,
+                        status: success ? 200 : 400,
+                        statusText: success ? 'OK' : 'Bad Request',
+                        headers: {
+                            'content-type': 'application/json',
+                            'date': timestamp,
+                            'server': 'Blok Workflow Server'
+                        },
+                        data: success ? {
+                            success: true,
+                            message: 'Request processed successfully',
+                            data: {
+                                id: Math.floor(Math.random() * 1000),
+                                timestamp,
+                                request: {
+                                    method: testConfig.method,
+                                    url: testConfig.url
+                                }
+                            }
+                        } : {
+                            success: false,
+                            error: 'Invalid request parameters',
+                            details: 'Check your request configuration and try again'
+                        },
+                        duration: Math.floor(Math.random() * 500) + 100 // 100-600ms
+                    };
+                    
+                    setTestResponse(response);
+                    setTestHistory(prev => [{ config: { ...testConfig }, response, id: Date.now() }, ...prev]);
+                    setLoading(false);
+                }, 1000);
+            };
+
+            const formatJson = (json) => {
+                try {
+                    return JSON.stringify(json, null, 2);
+                } catch (e) {
+                    return json;
+                }
+            };
+
+            return (
+                <div className="w-full h-full bg-gray-50">
+                    <div className="flex flex-col h-full">
+                        <div className="bg-purple-600 text-white p-4">
+                            <h1 className="text-2xl font-bold">Workflow Testing Interface</h1>
+                            <p className="text-sm opacity-80">Test and debug your workflow endpoints</p>
+                        </div>
+                        
+                        <div className="flex-grow p-4 overflow-auto">
+                            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                                {/* Sidebar */}
+                                <div className="lg:col-span-1">
+                                    <div className="bg-white p-4 rounded-lg shadow mb-4">
+                                        <h2 className="text-lg font-semibold mb-2">Workflows</h2>
+                                        <div className="space-y-2">
+                                            {workflows.map(workflow => (
+                                                <div 
+                                                    key={workflow.id}
+                                                    className={`p-2 rounded cursor-pointer ${selectedWorkflow?.id === workflow.id ? 'bg-purple-100 border-l-4 border-purple-500' : 'hover:bg-gray-100'}`}
+                                                    onClick={() => setSelectedWorkflow(workflow)}
+                                                >
+                                                    <div className="font-medium">{workflow.name}</div>
+                                                    <div className="text-sm text-gray-500">{workflow.description}</div>
+                                                    <div className="text-xs text-purple-600 mt-1">{workflow.endpoint}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="bg-white p-4 rounded-lg shadow">
+                                        <h2 className="text-lg font-semibold mb-2">Test Templates</h2>
+                                        <div className="space-y-2">
+                                            {testTemplates.map((template, index) => (
+                                                <div 
+                                                    key={index}
+                                                    className={`p-2 rounded cursor-pointer ${selectedTemplate === template ? 'bg-purple-100 border-l-4 border-purple-500' : 'hover:bg-gray-100'}`}
+                                                    onClick={() => applyTemplate(template)}
+                                                >
+                                                    <div className="font-medium">{template.name}</div>
+                                                    <div className="text-sm text-gray-500">{template.description}</div>
+                                                    <div className="text-xs text-purple-600 mt-1">{template.method}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                {/* Main Content */}
+                                <div className="lg:col-span-3">
+                                    <div className="bg-white p-4 rounded-lg shadow mb-4">
+                                        <div className="flex justify-between items-center mb-4">
+                                            <h2 className="text-lg font-semibold">
+                                                {selectedWorkflow ? `Testing: ${selectedWorkflow.name}` : 'Select a workflow to test'}
+                                            </h2>
+                                            <div className="flex space-x-2">
+                                                <button 
+                                                    className={`px-3 py-1 text-sm font-medium rounded ${activeTab === 'request' ? 'bg-purple-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+                                                    onClick={() => setActiveTab('request')}
+                                                >
+                                                    Request
+                                                </button>
+                                                <button 
+                                                    className={`px-3 py-1 text-sm font-medium rounded ${activeTab === 'response' ? 'bg-purple-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+                                                    onClick={() => setActiveTab('response')}
+                                                    disabled={!testResponse}
+                                                >
+                                                    Response
+                                                </button>
+                                                <button 
+                                                    className={`px-3 py-1 text-sm font-medium rounded ${activeTab === 'history' ? 'bg-purple-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+                                                    onClick={() => setActiveTab('history')}
+                                                >
+                                                    History
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        {activeTab === 'request' && (
+                                            <div>
+                                                <div className="mb-4">
+                                                    <div className="flex mb-2">
+                                                        <div className="w-1/4">
+                                                            <select 
+                                                                className="w-full p-2 border rounded-l bg-gray-100 font-medium"
+                                                                value={testConfig.method}
+                                                                onChange={(e) => handleMethodChange(e.target.value)}
+                                                            >
+                                                                <option value="GET">GET</option>
+                                                                <option value="POST">POST</option>
+                                                                <option value="PUT">PUT</option>
+                                                                <option value="DELETE">DELETE</option>
+                                                                <option value="PATCH">PATCH</option>
+                                                            </select>
+                                                        </div>
+                                                        <div className="w-3/4">
+                                                            <input 
+                                                                type="text" 
+                                                                className="w-full p-2 border rounded-r"
+                                                                placeholder="Enter request URL"
+                                                                value={testConfig.url}
+                                                                onChange={handleUrlChange}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className="mb-4">
+                                                    <h3 className="text-md font-medium mb-2">Headers</h3>
+                                                    <div className="editor-container" ref={headersEditorRef}></div>
+                                                </div>
+                                                
+                                                <div className="mb-4">
+                                                    <h3 className="text-md font-medium mb-2">Body</h3>
+                                                    <div className="editor-container" ref={bodyEditorRef}></div>
+                                                </div>
+                                                
+                                                <div className="flex justify-end">
+                                                    <button 
+                                                        className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 flex items-center"
+                                                        onClick={executeTest}
+                                                        disabled={loading || !selectedWorkflow}
+                                                    >
+                                                        {loading ? (
+                                                            <>
+                                                                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                                </svg>
+                                                                Executing...
+                                                            </>
+                                                        ) : 'Execute Test'}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+                                        
+                                        {activeTab === 'response' && (
+                                            <div>
+                                                {testResponse ? (
+                                                    <div>
+                                                        <div className="flex justify-between items-center mb-2">
+                                                            <div className="flex items-center">
+                                                                <span className={`px-2 py-1 text-xs font-semibold rounded-full mr-2 ${testResponse.status < 400 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                                                    {testResponse.status} {testResponse.statusText}
+                                                                </span>
+                                                                <span className="text-sm text-gray-500">
+                                                                    {testResponse.duration}ms
+                                                                </span>
+                                                            </div>
+                                                            <div className="text-sm text-gray-500">
+                                                                {new Date(testResponse.timestamp).toLocaleString()}
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div className="mb-4">
+                                                            <h3 className="text-md font-medium mb-2">Response Headers</h3>
+                                                            <div className="response-container">
+                                                                <pre>{formatJson(testResponse.headers)}</pre>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div>
+                                                            <h3 className="text-md font-medium mb-2">Response Body</h3>
+                                                            <div className="response-container">
+                                                                <pre>{formatJson(testResponse.data)}</pre>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex items-center justify-center h-64 text-gray-500">
+                                                        No response data available. Execute a test first.
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                        
+                                        {activeTab === 'history' && (
+                                            <div>
+                                                {testHistory.length > 0 ? (
+                                                    <div className="space-y-4">
+                                                        {testHistory.map(item => (
+                                                            <div key={item.id} className="border rounded p-3 hover:bg-gray-50">
+                                                                <div className="flex justify-between items-center mb-2">
+                                                                    <div className="flex items-center">
+                                                                        <span className={`px-2 py-1 text-xs font-semibold rounded-full mr-2 ${item.response.status < 400 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                                                            {item.response.status}
+                                                                        </span>
+                                                                        <span className="font-medium">
+                                                                            {item.config.method} {item.config.url.split('/').pop()}
+                                                                        </span>
+                                                                    </div>
+                                                                    <div className="text-sm text-gray-500">
+                                                                        {new Date(item.response.timestamp).toLocaleString()}
+                                                                    </div>
+                                                                </div>
+                                                                <div className="text-sm text-gray-600 mb-1">
+                                                                    {item.config.url}
+                                                                </div>
+                                                                <div className="flex justify-between text-xs text-gray-500">
+                                                                    <div>{item.response.duration}ms</div>
+                                                                    <button 
+                                                                        className="text-purple-600 hover:text-purple-800"
+                                                                        onClick={() => {
+                                                                            setTestConfig(item.config);
+                                                                            setTestResponse(item.response);
+                                                                            setActiveTab('request');
+                                                                            
+                                                                            // Update editors if they exist
+                                                                            if (headersEditor.current && bodyEditor.current) {
+                                                                                headersEditor.current.setValue(JSON.stringify(item.config.headers, null, 2));
+                                                                                bodyEditor.current.setValue(item.config.body);
+                                                                            }
+                                                                        }}
+                                                                    >
+                                                                        Rerun
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex items-center justify-center h-64 text-gray-500">
+                                                        No test history available. Execute some tests to see them here.
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<WorkflowTesting />, document.getElementById('root'));
+    </script>
+</body>
+</html>

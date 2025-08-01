@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blok Workflow Editor</title>
+    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script src="https://unpkg.com/react-flow-renderer@9.7.4/dist/umd/index.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body, html, #root {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        .react-flow {
+            width: 100%;
+            height: 100%;
+        }
+        .react-flow__node {
+            cursor: pointer;
+        }
+        .node-editor {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 300px;
+            height: 100%;
+            background: white;
+            border-left: 1px solid #ddd;
+            z-index: 10;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div id="root" class="w-full h-screen"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useCallback, useRef } = React;
+        const { ReactFlow, Background, Controls, MiniMap, addEdge, removeElements } = ReactFlowRenderer;
+
+        // Sample workflow data
+        const initialWorkflow = {
+            "name": "New Workflow",
+            "description": "A new workflow created with the editor",
+            "nodes": {
+                "start": {
+                    "type": "@nanoservice-ts/api-call",
+                    "name": "API Call",
+                    "inputs": {
+                        "url": "https://api.example.com",
+                        "method": "GET"
+                    }
+                }
+            },
+            "edges": [],
+            "triggers": [
+                {
+                    "type": "http",
+                    "path": "/api",
+                    "method": "GET",
+                    "node": "start"
+                }
+            ]
+        };
+
+        // Node types available in the editor
+        const nodeTypes = [
+            { id: '@nanoservice-ts/api-call', name: 'API Call' },
+            { id: '@nanoservice-ts/if-else', name: 'If-Else' },
+            { id: '@nanoservice-ts/react', name: 'React UI' },
+            { id: '@nanoservice-ts/workflow-viz', name: 'Workflow Visualization' }
+        ];
+
+        function WorkflowEditor() {
+            const [nodes, setNodes] = useState([]);
+            const [edges, setEdges] = useState([]);
+            const [workflow, setWorkflow] = useState(initialWorkflow);
+            const [selectedNode, setSelectedNode] = useState(null);
+            const [showNodeEditor, setShowNodeEditor] = useState(false);
+            const [nodeName, setNodeName] = useState('');
+            const [nodeType, setNodeType] = useState('');
+            const [nodeInputs, setNodeInputs] = useState({});
+            const reactFlowWrapper = useRef(null);
+            const [reactFlowInstance, setReactFlowInstance] = useState(null);
+
+            useEffect(() => {
+                if (workflow && Object.keys(workflow).length > 0) {
+                    const { nodes: workflowNodes, edges: workflowEdges } = processWorkflow(workflow);
+                    setNodes(workflowNodes);
+                    setEdges(workflowEdges);
+                }
+            }, [workflow]);
+
+            // Process workflow JSON into nodes and edges for ReactFlow
+            const processWorkflow = (workflow) => {
+                const nodes = [];
+                const edges = [];
+                const nodePositions = {};
+                
+                // Calculate positions for nodes in a grid layout
+                const calculatePositions = () => {
+                    const nodeIds = Object.keys(workflow.nodes || {});
+                    const gridSize = Math.ceil(Math.sqrt(nodeIds.length));
+                    const spacing = 250;
+                    
+                    nodeIds.forEach((nodeId, index) => {
+                        const row = Math.floor(index / gridSize);
+                        const col = index % gridSize;
+                        nodePositions[nodeId] = {
+                            x: col * spacing + 50,
+                            y: row * spacing + 50
+                        };
+                    });
+                };
+                
+                calculatePositions();
+                
+                // Create nodes
+                if (workflow.nodes) {
+                    Object.entries(workflow.nodes).forEach(([nodeId, nodeData]) => {
+                        const position = nodePositions[nodeId] || { x: 0, y: 0 };
+                        nodes.push({
+                            id: nodeId,
+                            type: 'default',
+                            data: { 
+                                label: nodeData.name || nodeId,
+                                nodeType: nodeData.type || 'Unknown',
+                                details: nodeData,
+                                onNodeClick: () => handleNodeClick(nodeId, nodeData)
+                            },
+                            position,
+                            style: {
+                                background: '#fff',
+                                border: '1px solid #ddd',
+                                borderRadius: '5px',
+                                padding: '10px',
+                                width: 180,
+                            }
+                        });
+                    });
+                }
+                
+                // Create edges
+                if (workflow.edges) {
+                    workflow.edges.forEach((edge, index) => {
+                        edges.push({
+                            id: `e${index}`,
+                            source: edge.from,
+                            target: edge.to,
+                            animated: true,
+                            style: { stroke: '#3b82f6' },
+                            label: edge.condition || ''
+                        });
+                    });
+                }
+                
+                return { nodes, edges };
+            };
+
+            const handleNodeClick = (nodeId, nodeData) => {
+                setSelectedNode(nodeId);
+                setNodeName(nodeData.name || nodeId);
+                setNodeType(nodeData.type || '');
+                setNodeInputs(nodeData.inputs || {});
+                setShowNodeEditor(true);
+            };
+
+            const onConnect = useCallback((params) => {
+                const newEdge = {
+                    from: params.source,
+                    to: params.target
+                };
+                
+                // Update the workflow with the new edge
+                const updatedWorkflow = {
+                    ...workflow,
+                    edges: [...(workflow.edges || []), newEdge]
+                };
+                
+                setWorkflow(updatedWorkflow);
+            }, [workflow]);
+
+            const onElementsRemove = useCallback((elementsToRemove) => {
+                const nodesToRemove = elementsToRemove.filter(el => !el.source); // Nodes don't have source
+                const edgesToRemove = elementsToRemove.filter(el => el.source); // Edges have source
+                
+                // Update workflow by removing nodes and edges
+                const updatedNodes = { ...workflow.nodes };
+                nodesToRemove.forEach(node => {
+                    delete updatedNodes[node.id];
+                });
+                
+                const updatedEdges = workflow.edges.filter(edge => {
+                    return !edgesToRemove.some(el => 
+                        el.source === edge.from && el.target === edge.to
+                    );
+                });
+                
+                setWorkflow({
+                    ...workflow,
+                    nodes: updatedNodes,
+                    edges: updatedEdges
+                });
+            }, [workflow]);
+
+            const onDragOver = useCallback((event) => {
+                event.preventDefault();
+                event.dataTransfer.dropEffect = 'move';
+            }, []);
+
+            const onDrop = useCallback(
+                (event) => {
+                    event.preventDefault();
+
+                    const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
+                    const type = event.dataTransfer.getData('application/reactflow');
+                    
+                    // Check if the dropped element is valid
+                    if (typeof type === 'undefined' || !type) {
+                        return;
+                    }
+
+                    const position = reactFlowInstance.project({
+                        x: event.clientX - reactFlowBounds.left,
+                        y: event.clientY - reactFlowBounds.top,
+                    });
+                    
+                    // Generate a unique ID for the new node
+                    const newNodeId = `node_${Date.now()}`;
+                    
+                    // Create a new node in the workflow
+                    const newNode = {
+                        type: type,
+                        name: `New ${type.split('/').pop()}`,
+                        inputs: {}
+                    };
+                    
+                    // Update the workflow with the new node
+                    const updatedWorkflow = {
+                        ...workflow,
+                        nodes: {
+                            ...workflow.nodes,
+                            [newNodeId]: newNode
+                        }
+                    };
+                    
+                    setWorkflow(updatedWorkflow);
+                },
+                [reactFlowInstance, workflow]
+            );
+
+            const onLoad = useCallback(
+                (instance) => {
+                    setReactFlowInstance(instance);
+                },
+                []
+            );
+
+            const updateNodeProperties = () => {
+                if (!selectedNode) return;
+                
+                // Update the node in the workflow
+                const updatedNodes = { ...workflow.nodes };
+                updatedNodes[selectedNode] = {
+                    ...updatedNodes[selectedNode],
+                    name: nodeName,
+                    type: nodeType,
+                    inputs: nodeInputs
+                };
+                
+                setWorkflow({
+                    ...workflow,
+                    nodes: updatedNodes
+                });
+                
+                setShowNodeEditor(false);
+            };
+
+            const addNewNode = () => {
+                // Generate a unique ID for the new node
+                const newNodeId = `node_${Date.now()}`;
+                
+                // Create a new node in the workflow
+                const newNode = {
+                    type: '@nanoservice-ts/api-call',
+                    name: 'New Node',
+                    inputs: {}
+                };
+                
+                // Update the workflow with the new node
+                const updatedWorkflow = {
+                    ...workflow,
+                    nodes: {
+                        ...workflow.nodes,
+                        [newNodeId]: newNode
+                    }
+                };
+                
+                setWorkflow(updatedWorkflow);
+            };
+
+            const exportWorkflow = () => {
+                const workflowJson = JSON.stringify(workflow, null, 2);
+                const blob = new Blob([workflowJson], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${workflow.name.replace(/\s+/g, '-').toLowerCase()}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            };
+
+            const updateInputValue = (key, value) => {
+                setNodeInputs({
+                    ...nodeInputs,
+                    [key]: value
+                });
+            };
+
+            const addNewInput = () => {
+                setNodeInputs({
+                    ...nodeInputs,
+                    [`new_input_${Date.now()}`]: ''
+                });
+            };
+
+            const removeInput = (key) => {
+                const updatedInputs = { ...nodeInputs };
+                delete updatedInputs[key];
+                setNodeInputs(updatedInputs);
+            };
+
+            return (
+                <div className="w-full h-full">
+                    <div className="flex flex-col h-full">
+                        <div className="bg-blue-600 text-white p-4 flex justify-between items-center">
+                            <div>
+                                <h1 className="text-2xl font-bold">{workflow.name || 'New Workflow'}</h1>
+                                <p className="text-sm opacity-80">{workflow.description || 'A new workflow'}</p>
+                            </div>
+                            <div className="flex space-x-2">
+                                <button 
+                                    className="bg-white text-blue-600 px-4 py-2 rounded hover:bg-blue-50"
+                                    onClick={addNewNode}
+                                >
+                                    Add Node
+                                </button>
+                                <button 
+                                    className="bg-white text-blue-600 px-4 py-2 rounded hover:bg-blue-50"
+                                    onClick={exportWorkflow}
+                                >
+                                    Export
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div className="flex-grow relative" ref={reactFlowWrapper}>
+                            <ReactFlow
+                                nodes={nodes}
+                                edges={edges}
+                                onConnect={onConnect}
+                                onElementsRemove={onElementsRemove}
+                                onLoad={onLoad}
+                                onDrop={onDrop}
+                                onDragOver={onDragOver}
+                                deleteKeyCode={46}
+                                fitView
+                            >
+                                <Background color="#aaa" gap={16} />
+                                <Controls />
+                                <MiniMap
+                                    nodeStrokeColor={(n) => '#fff'}
+                                    nodeColor={(n) => '#3b82f6'}
+                                />
+                            </ReactFlow>
+                            
+                            {showNodeEditor && (
+                                <div className="node-editor p-4">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h2 className="text-xl font-bold">Edit Node</h2>
+                                        <button 
+                                            className="text-gray-500 hover:text-gray-700"
+                                            onClick={() => setShowNodeEditor(false)}
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                    
+                                    <div className="mb-4">
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Node Name</label>
+                                        <input 
+                                            type="text" 
+                                            className="w-full p-2 border rounded"
+                                            value={nodeName}
+                                            onChange={(e) => setNodeName(e.target.value)}
+                                        />
+                                    </div>
+                                    
+                                    <div className="mb-4">
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Node Type</label>
+                                        <select 
+                                            className="w-full p-2 border rounded"
+                                            value={nodeType}
+                                            onChange={(e) => setNodeType(e.target.value)}
+                                        >
+                                            {nodeTypes.map(type => (
+                                                <option key={type.id} value={type.id}>{type.name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    
+                                    <div className="mb-4">
+                                        <div className="flex justify-between items-center mb-2">
+                                            <label className="block text-sm font-medium text-gray-700">Inputs</label>
+                                            <button 
+                                                className="text-blue-600 text-sm hover:text-blue-800"
+                                                onClick={addNewInput}
+                                            >
+                                                + Add Input
+                                            </button>
+                                        </div>
+                                        
+                                        {Object.entries(nodeInputs).map(([key, value]) => (
+                                            <div key={key} className="mb-2 flex items-center">
+                                                <input 
+                                                    type="text" 
+                                                    className="w-1/3 p-2 border rounded-l"
+                                                    value={key}
+                                                    readOnly
+                                                />
+                                                <input 
+                                                    type="text" 
+                                                    className="w-2/3 p-2 border-t border-b border-r rounded-r"
+                                                    value={value}
+                                                    onChange={(e) => updateInputValue(key, e.target.value)}
+                                                />
+                                                <button 
+                                                    className="ml-2 text-red-500 hover:text-red-700"
+                                                    onClick={() => removeInput(key)}
+                                                >
+                                                    ✕
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    
+                                    <button 
+                                        className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
+                                        onClick={updateNodeProperties}
+                                    >
+                                        Update Node
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<WorkflowEditor />, document.getElementById('root'));
+    </script>
+</body>
+</html>

@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blok Workflow Integration</title>
+    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.33.0/min/vs/loader.js"></script>
+    <style>
+        body, html, #root {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        .code-editor {
+            height: 400px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div id="root" class="w-full h-screen"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // Sample integration templates
+        const integrationTemplates = [
+            {
+                id: 'rest-api',
+                name: 'REST API',
+                description: 'Integrate with a REST API endpoint',
+                category: 'API',
+                template: {
+                    type: 'http',
+                    method: 'GET',
+                    url: 'https://api.example.com/data',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer YOUR_API_KEY'
+                    },
+                    params: {},
+                    body: {}
+                }
+            },
+            {
+                id: 'webhook',
+                name: 'Webhook',
+                description: 'Create a webhook endpoint for external services',
+                category: 'API',
+                template: {
+                    type: 'webhook',
+                    method: 'POST',
+                    path: '/webhooks/incoming',
+                    secret: 'YOUR_WEBHOOK_SECRET',
+                    handler: 'function processWebhook(data) {\n  // Process webhook data\n  return { success: true };\n}'
+                }
+            },
+            {
+                id: 'database',
+                name: 'Database Connection',
+                description: 'Connect to a database',
+                category: 'Database',
+                template: {
+                    type: 'database',
+                    driver: 'postgres',
+                    host: 'localhost',
+                    port: 5432,
+                    database: 'my_database',
+                    username: 'user',
+                    password: 'password',
+                    ssl: false
+                }
+            },
+            {
+                id: 'message-queue',
+                name: 'Message Queue',
+                description: 'Connect to a message queue service',
+                category: 'Messaging',
+                template: {
+                    type: 'queue',
+                    provider: 'rabbitmq',
+                    host: 'localhost',
+                    port: 5672,
+                    username: 'guest',
+                    password: 'guest',
+                    exchange: 'my_exchange',
+                    queue: 'my_queue',
+                    routingKey: 'my_key'
+                }
+            },
+            {
+                id: 'email-service',
+                name: 'Email Service',
+                description: 'Connect to an email service provider',
+                category: 'Communication',
+                template: {
+                    type: 'email',
+                    provider: 'smtp',
+                    host: 'smtp.example.com',
+                    port: 587,
+                    secure: true,
+                    auth: {
+                        user: 'user@example.com',
+                        pass: 'password'
+                    },
+                    defaultFrom: 'noreply@example.com'
+                }
+            },
+            {
+                id: 'storage',
+                name: 'File Storage',
+                description: 'Connect to a file storage service',
+                category: 'Storage',
+                template: {
+                    type: 'storage',
+                    provider: 's3',
+                    region: 'us-east-1',
+                    bucket: 'my-bucket',
+                    accessKey: 'YOUR_ACCESS_KEY',
+                    secretKey: 'YOUR_SECRET_KEY'
+                }
+            },
+            {
+                id: 'authentication',
+                name: 'Authentication Service',
+                description: 'Integrate with an authentication provider',
+                category: 'Security',
+                template: {
+                    type: 'auth',
+                    provider: 'oauth2',
+                    clientId: 'YOUR_CLIENT_ID',
+                    clientSecret: 'YOUR_CLIENT_SECRET',
+                    authorizationUrl: 'https://auth.example.com/authorize',
+                    tokenUrl: 'https://auth.example.com/token',
+                    redirectUri: 'http://localhost:3000/callback',
+                    scope: 'read write'
+                }
+            },
+            {
+                id: 'custom-integration',
+                name: 'Custom Integration',
+                description: 'Create a custom integration with JavaScript',
+                category: 'Custom',
+                template: {
+                    type: 'custom',
+                    name: 'my-custom-integration',
+                    description: 'My custom integration',
+                    code: 'async function execute(input) {\n  // Your custom integration logic here\n  const result = await someAsyncOperation(input);\n  return {\n    success: true,\n    data: result\n  };\n}'
+                }
+            }
+        ];
+
+        // Sample categories
+        const categories = [
+            'All',
+            'API',
+            'Database',
+            'Messaging',
+            'Communication',
+            'Storage',
+            'Security',
+            'Custom'
+        ];
+
+        // Sample workflows
+        const workflows = [
+            { id: 'workflow-1', name: 'Countries API' },
+            { id: 'workflow-2', name: 'Weather Service' },
+            { id: 'workflow-3', name: 'User Authentication' },
+            { id: 'workflow-4', name: 'Data Processing' },
+            { id: 'workflow-5', name: 'Email Notifications' },
+        ];
+
+        function WorkflowIntegration() {
+            const [selectedTemplate, setSelectedTemplate] = useState(null);
+            const [searchTerm, setSearchTerm] = useState('');
+            const [selectedCategory, setSelectedCategory] = useState('All');
+            const [configData, setConfigData] = useState({});
+            const [selectedWorkflow, setSelectedWorkflow] = useState(null);
+            const [integrationName, setIntegrationName] = useState('');
+            const [testResult, setTestResult] = useState(null);
+            const [isTesting, setIsTesting] = useState(false);
+            const [isDeploying, setIsDeploying] = useState(false);
+            const editorRef = useRef(null);
+
+            useEffect(() => {
+                // Initialize Monaco editor for code templates
+                if (selectedTemplate && (selectedTemplate.id === 'webhook' || selectedTemplate.id === 'custom-integration')) {
+                    require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.33.0/min/vs' }});
+                    require(['vs/editor/editor.main'], () => {
+                        if (!editorRef.current) {
+                            const editor = monaco.editor.create(document.getElementById('code-editor'), {
+                                value: selectedTemplate.id === 'webhook' 
+                                    ? selectedTemplate.template.handler 
+                                    : selectedTemplate.template.code,
+                                language: 'javascript',
+                                theme: 'vs-dark',
+                                automaticLayout: true,
+                                minimap: { enabled: false }
+                            });
+                            editorRef.current = editor;
+                        }
+                    });
+                }
+            }, [selectedTemplate]);
+
+            useEffect(() => {
+                if (selectedTemplate) {
+                    setConfigData(JSON.parse(JSON.stringify(selectedTemplate.template)));
+                    setIntegrationName(`${selectedTemplate.name.toLowerCase().replace(/\s+/g, '-')}-integration`);
+                }
+            }, [selectedTemplate]);
+
+            const filteredTemplates = integrationTemplates.filter(template => {
+                const matchesSearch = 
+                    template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    template.description.toLowerCase().includes(searchTerm.toLowerCase());
+                
+                const matchesCategory = 
+                    selectedCategory === 'All' || 
+                    template.category === selectedCategory;
+                
+                return matchesSearch && matchesCategory;
+            });
+
+            const handleInputChange = (key, value) => {
+                setConfigData(prev => ({
+                    ...prev,
+                    [key]: value
+                }));
+            };
+
+            const handleNestedInputChange = (parent, key, value) => {
+                setConfigData(prev => ({
+                    ...prev,
+                    [parent]: {
+                        ...prev[parent],
+                        [key]: value
+                    }
+                }));
+            };
+
+            const handleTestIntegration = () => {
+                setIsTesting(true);
+                // Simulate API call
+                setTimeout(() => {
+                    setTestResult({
+                        success: true,
+                        message: 'Integration test successful!',
+                        data: {
+                            timestamp: new Date().toISOString(),
+                            responseTime: '120ms',
+                            status: 200
+                        }
+                    });
+                    setIsTesting(false);
+                }, 1500);
+            };
+
+            const handleDeployIntegration = () => {
+                setIsDeploying(true);
+                // Simulate API call
+                setTimeout(() => {
+                    setIsDeploying(false);
+                    alert(`Integration "${integrationName}" deployed successfully to workflow "${selectedWorkflow?.name}"!`);
+                }, 2000);
+            };
+
+            const renderConfigFields = () => {
+                if (!selectedTemplate) return null;
+
+                const template = selectedTemplate.template;
+                const fields = [];
+
+                // Render fields based on template type
+                Object.keys(template).forEach(key => {
+                    // Skip type field and handler/code fields (they're handled separately)
+                    if (key === 'type' || key === 'handler' || key === 'code') return;
+
+                    // Handle nested objects
+                    if (typeof template[key] === 'object' && !Array.isArray(template[key])) {
+                        Object.keys(template[key]).forEach(nestedKey => {
+                            fields.push(
+                                <div key={`${key}-${nestedKey}`} className="mb-4">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        {key}.{nestedKey}
+                                    </label>
+                                    <input
+                                        type="text"
+                                        className="w-full p-2 border rounded"
+                                        value={configData[key]?.[nestedKey] || ''}
+                                        onChange={(e) => handleNestedInputChange(key, nestedKey, e.target.value)}
+                                    />
+                                </div>
+                            );
+                        });
+                    } else {
+                        fields.push(
+                            <div key={key} className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    {key}
+                                </label>
+                                <input
+                                    type="text"
+                                    className="w-full p-2 border rounded"
+                                    value={configData[key] || ''}
+                                    onChange={(e) => handleInputChange(key, e.target.value)}
+                                />
+                            </div>
+                        );
+                    }
+                });
+
+                return fields;
+            };
+
+            return (
+                <div className="w-full h-full bg-gray-50">
+                    <div className="flex flex-col h-full">
+                        <div className="bg-purple-600 text-white p-4">
+                            <h1 className="text-2xl font-bold">Workflow Integration</h1>
+                            <p className="text-sm opacity-80">Connect your workflows to external services</p>
+                        </div>
+                        
+                        <div className="flex-grow flex overflow-hidden">
+                            {/* Sidebar */}
+                            <div className="w-80 bg-white border-r border-gray-200 flex flex-col overflow-hidden">
+                                <div className="p-4 border-b border-gray-200">
+                                    <input 
+                                        type="text" 
+                                        className="w-full p-2 border rounded"
+                                        placeholder="Search integrations..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                    />
+                                </div>
+                                
+                                <div className="p-4 border-b border-gray-200">
+                                    <h2 className="text-sm font-medium text-gray-500 mb-2">Categories</h2>
+                                    <div className="flex flex-wrap gap-2">
+                                        {categories.map(category => (
+                                            <button
+                                                key={category}
+                                                className={`px-3 py-1 text-xs font-medium rounded-full ${selectedCategory === category ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'}`}
+                                                onClick={() => setSelectedCategory(category)}
+                                            >
+                                                {category}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                
+                                <div className="flex-grow overflow-y-auto">
+                                    {filteredTemplates.length > 0 ? (
+                                        <div className="divide-y divide-gray-200">
+                                            {filteredTemplates.map(template => (
+                                                <div 
+                                                    key={template.id}
+                                                    className={`p-4 cursor-pointer ${selectedTemplate?.id === template.id ? 'bg-purple-50 border-l-4 border-purple-500' : 'hover:bg-gray-50'}`}
+                                                    onClick={() => setSelectedTemplate(template)}
+                                                >
+                                                    <div className="font-medium">{template.name}</div>
+                                                    <div className="text-sm text-gray-500 mb-2">{template.description}</div>
+                                                    <div className="text-xs inline-block px-2 py-0.5 bg-gray-100 rounded-full">{template.category}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="p-4 text-center text-gray-500">
+                                            No integration templates found matching your criteria
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                            
+                            {/* Main Content */}
+                            <div className="flex-grow overflow-y-auto p-6">
+                                {selectedTemplate ? (
+                                    <div>
+                                        <div className="flex justify-between items-center mb-6">
+                                            <h2 className="text-xl font-bold">{selectedTemplate.name} Integration</h2>
+                                            <div className="flex space-x-2">
+                                                <button 
+                                                    className={`px-4 py-2 text-sm font-medium rounded ${isTesting ? 'bg-gray-300 cursor-not-allowed' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
+                                                    onClick={handleTestIntegration}
+                                                    disabled={isTesting}
+                                                >
+                                                    {isTesting ? 'Testing...' : 'Test Integration'}
+                                                </button>
+                                                <button 
+                                                    className={`px-4 py-2 text-sm font-medium rounded ${!selectedWorkflow || isDeploying ? 'bg-gray-300 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700'}`}
+                                                    onClick={handleDeployIntegration}
+                                                    disabled={!selectedWorkflow || isDeploying}
+                                                >
+                                                    {isDeploying ? 'Deploying...' : 'Deploy Integration'}
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="bg-white p-6 rounded-lg shadow-sm">
+                                                <h3 className="text-lg font-medium mb-4">Configuration</h3>
+                                                
+                                                <div className="mb-4">
+                                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                        Integration Name
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        className="w-full p-2 border rounded"
+                                                        value={integrationName}
+                                                        onChange={(e) => setIntegrationName(e.target.value)}
+                                                    />
+                                                </div>
+
+                                                <div className="mb-4">
+                                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                        Target Workflow
+                                                    </label>
+                                                    <select
+                                                        className="w-full p-2 border rounded"
+                                                        value={selectedWorkflow?.id || ''}
+                                                        onChange={(e) => {
+                                                            const workflow = workflows.find(w => w.id === e.target.value);
+                                                            setSelectedWorkflow(workflow);
+                                                        }}
+                                                    >
+                                                        <option value="">Select a workflow</option>
+                                                        {workflows.map(workflow => (
+                                                            <option key={workflow.id} value={workflow.id}>
+                                                                {workflow.name}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+
+                                                {renderConfigFields()}
+
+                                                {(selectedTemplate.id === 'webhook' || selectedTemplate.id === 'custom-integration') && (
+                                                    <div className="mt-4">
+                                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                            {selectedTemplate.id === 'webhook' ? 'Handler Function' : 'Custom Code'}
+                                                        </label>
+                                                        <div id="code-editor" className="code-editor"></div>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <div>
+                                                <div className="bg-white p-6 rounded-lg shadow-sm mb-6">
+                                                    <h3 className="text-lg font-medium mb-4">Integration Preview</h3>
+                                                    <pre className="bg-gray-800 text-white p-4 rounded overflow-auto text-sm">
+                                                        {JSON.stringify(configData, null, 2)}
+                                                    </pre>
+                                                </div>
+
+                                                {testResult && (
+                                                    <div className={`p-6 rounded-lg shadow-sm ${testResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+                                                        <h3 className="text-lg font-medium mb-2">
+                                                            Test Results
+                                                        </h3>
+                                                        <div className={`text-sm ${testResult.success ? 'text-green-700' : 'text-red-700'} mb-2`}>
+                                                            {testResult.message}
+                                                        </div>
+                                                        {testResult.data && (
+                                                            <div className="mt-2">
+                                                                <h4 className="text-sm font-medium mb-1">Response Details:</h4>
+                                                                <pre className="bg-white p-2 rounded border text-xs overflow-auto">
+                                                                    {JSON.stringify(testResult.data, null, 2)}
+                                                                </pre>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center justify-center h-full">
+                                        <div className="text-center p-8">
+                                            <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                            </svg>
+                                            <h3 className="text-lg font-medium text-gray-900 mb-2">Select an Integration Template</h3>
+                                            <p className="text-gray-500">Choose an integration template from the sidebar to get started</p>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<WorkflowIntegration />, document.getElementById('root'));
+    </script>
+</body>
+</html>

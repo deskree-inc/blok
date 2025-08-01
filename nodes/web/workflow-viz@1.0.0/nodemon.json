@@ -1,0 +1,6 @@
+{
+  "watch": ["*.ts", "**/*.ts", "**/*.jsx", "**/*.html"],
+  "ext": "ts,tsx,jsx,html",
+  "ignore": ["node_modules", "dist"],
+  "exec": "npm run build:ts"
+}

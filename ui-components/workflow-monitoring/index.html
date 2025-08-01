@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blok Workflow Monitoring Dashboard</title>
+    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body, html, #root {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div id="root" class="w-full h-screen"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // Sample workflow execution data
+        const sampleExecutions = [
+            {
+                id: 'exec-001',
+                workflow: 'Countries Workflow',
+                startTime: new Date(Date.now() - 3600000).toISOString(),
+                endTime: new Date(Date.now() - 3550000).toISOString(),
+                status: 'completed',
+                nodes: [
+                    { id: 'api-call', name: 'Fetch Countries', status: 'completed', duration: 450 },
+                    { id: 'react-ui', name: 'Display Countries', status: 'completed', duration: 120 }
+                ]
+            },
+            {
+                id: 'exec-002',
+                workflow: 'Weather Workflow',
+                startTime: new Date(Date.now() - 1800000).toISOString(),
+                endTime: new Date(Date.now() - 1790000).toISOString(),
+                status: 'completed',
+                nodes: [
+                    { id: 'api-call', name: 'Fetch Weather', status: 'completed', duration: 350 },
+                    { id: 'react-ui', name: 'Display Weather', status: 'completed', duration: 100 }
+                ]
+            },
+            {
+                id: 'exec-003',
+                workflow: 'Complex Workflow',
+                startTime: new Date(Date.now() - 600000).toISOString(),
+                endTime: null,
+                status: 'running',
+                nodes: [
+                    { id: 'api-call', name: 'Fetch Data', status: 'completed', duration: 250 },
+                    { id: 'if-else', name: 'Filter Data', status: 'completed', duration: 50 },
+                    { id: 'react-ui', name: 'Display Data', status: 'running', duration: 300 }
+                ]
+            },
+            {
+                id: 'exec-004',
+                workflow: 'Failed Workflow',
+                startTime: new Date(Date.now() - 300000).toISOString(),
+                endTime: new Date(Date.now() - 295000).toISOString(),
+                status: 'failed',
+                error: 'API endpoint not available',
+                nodes: [
+                    { id: 'api-call', name: 'Fetch Data', status: 'failed', duration: 200, error: 'API endpoint not available' }
+                ]
+            }
+        ];
+
+        function WorkflowMonitoring() {
+            const [executions, setExecutions] = useState(sampleExecutions);
+            const [selectedExecution, setSelectedExecution] = useState(null);
+            const [filter, setFilter] = useState('all');
+            const [searchTerm, setSearchTerm] = useState('');
+            const executionChartRef = useRef(null);
+            const nodeChartRef = useRef(null);
+            const executionChart = useRef(null);
+            const nodeChart = useRef(null);
+
+            useEffect(() => {
+                // In a real application, you would fetch data from an API here
+                // For now, we'll use the sample data
+                setExecutions(sampleExecutions);
+            }, []);
+
+            useEffect(() => {
+                if (selectedExecution) {
+                    renderNodeChart();
+                }
+            }, [selectedExecution]);
+
+            useEffect(() => {
+                renderExecutionChart();
+            }, [executions]);
+
+            const renderExecutionChart = () => {
+                if (executionChartRef.current) {
+                    // Destroy existing chart if it exists
+                    if (executionChart.current) {
+                        executionChart.current.destroy();
+                    }
+
+                    const ctx = executionChartRef.current.getContext('2d');
+                    
+                    // Prepare data for the chart
+                    const labels = executions.map(exec => exec.workflow);
+                    const durations = executions.map(exec => {
+                        if (exec.endTime) {
+                            return (new Date(exec.endTime) - new Date(exec.startTime)) / 1000;
+                        }
+                        return (new Date() - new Date(exec.startTime)) / 1000;
+                    });
+                    const backgroundColors = executions.map(exec => {
+                        if (exec.status === 'completed') return 'rgba(34, 197, 94, 0.6)';
+                        if (exec.status === 'running') return 'rgba(59, 130, 246, 0.6)';
+                        return 'rgba(239, 68, 68, 0.6)';
+                    });
+
+                    executionChart.current = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Execution Duration (seconds)',
+                                data: durations,
+                                backgroundColor: backgroundColors,
+                                borderColor: backgroundColors.map(color => color.replace('0.6', '1')),
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            },
+                            onClick: (event, elements) => {
+                                if (elements.length > 0) {
+                                    const index = elements[0].index;
+                                    setSelectedExecution(executions[index]);
+                                }
+                            }
+                        }
+                    });
+                }
+            };
+
+            const renderNodeChart = () => {
+                if (nodeChartRef.current && selectedExecution) {
+                    // Destroy existing chart if it exists
+                    if (nodeChart.current) {
+                        nodeChart.current.destroy();
+                    }
+
+                    const ctx = nodeChartRef.current.getContext('2d');
+                    
+                    // Prepare data for the chart
+                    const labels = selectedExecution.nodes.map(node => node.name);
+                    const durations = selectedExecution.nodes.map(node => node.duration);
+                    const backgroundColors = selectedExecution.nodes.map(node => {
+                        if (node.status === 'completed') return 'rgba(34, 197, 94, 0.6)';
+                        if (node.status === 'running') return 'rgba(59, 130, 246, 0.6)';
+                        return 'rgba(239, 68, 68, 0.6)';
+                    });
+
+                    nodeChart.current = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Node Duration (ms)',
+                                data: durations,
+                                backgroundColor: backgroundColors,
+                                borderColor: backgroundColors.map(color => color.replace('0.6', '1')),
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                }
+            };
+
+            const filteredExecutions = executions.filter(exec => {
+                if (filter !== 'all' && exec.status !== filter) return false;
+                if (searchTerm && !exec.workflow.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+                return true;
+            });
+
+            const formatDate = (dateString) => {
+                if (!dateString) return 'In progress';
+                const date = new Date(dateString);
+                return date.toLocaleString();
+            };
+
+            const formatDuration = (startTime, endTime) => {
+                if (!endTime) return 'In progress';
+                const start = new Date(startTime);
+                const end = new Date(endTime);
+                const durationMs = end - start;
+                if (durationMs < 1000) return `${durationMs}ms`;
+                return `${(durationMs / 1000).toFixed(2)}s`;
+            };
+
+            const getStatusBadge = (status) => {
+                if (status === 'completed') {
+                    return <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Completed</span>;
+                }
+                if (status === 'running') {
+                    return <span className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Running</span>;
+                }
+                return <span className="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Failed</span>;
+            };
+
+            return (
+                <div className="w-full h-full bg-gray-50">
+                    <div className="flex flex-col h-full">
+                        <div className="bg-blue-600 text-white p-4">
+                            <h1 className="text-2xl font-bold">Workflow Monitoring Dashboard</h1>
+                            <p className="text-sm opacity-80">Monitor and analyze workflow executions</p>
+                        </div>
+                        
+                        <div className="flex-grow p-4 overflow-auto">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+                                <div className="bg-white p-4 rounded-lg shadow">
+                                    <h2 className="text-lg font-semibold mb-2">Workflow Executions</h2>
+                                    <div className="h-64">
+                                        <canvas ref={executionChartRef}></canvas>
+                                    </div>
+                                </div>
+                                
+                                <div className="bg-white p-4 rounded-lg shadow">
+                                    <h2 className="text-lg font-semibold mb-2">
+                                        {selectedExecution ? `${selectedExecution.workflow} Node Performance` : 'Select a workflow to see node details'}
+                                    </h2>
+                                    <div className="h-64">
+                                        {selectedExecution ? (
+                                            <canvas ref={nodeChartRef}></canvas>
+                                        ) : (
+                                            <div className="flex items-center justify-center h-full text-gray-500">
+                                                Click on a workflow execution to view node details
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div className="bg-white p-4 rounded-lg shadow">
+                                <div className="flex flex-col md:flex-row justify-between items-center mb-4">
+                                    <h2 className="text-lg font-semibold">Execution History</h2>
+                                    <div className="flex space-x-2 mt-2 md:mt-0">
+                                        <div>
+                                            <select 
+                                                className="p-2 border rounded"
+                                                value={filter}
+                                                onChange={(e) => setFilter(e.target.value)}
+                                            >
+                                                <option value="all">All Statuses</option>
+                                                <option value="completed">Completed</option>
+                                                <option value="running">Running</option>
+                                                <option value="failed">Failed</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <input 
+                                                type="text" 
+                                                placeholder="Search workflows..."
+                                                className="p-2 border rounded"
+                                                value={searchTerm}
+                                                onChange={(e) => setSearchTerm(e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div className="overflow-x-auto">
+                                    <table className="min-w-full divide-y divide-gray-200">
+                                        <thead className="bg-gray-50">
+                                            <tr>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Workflow</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start Time</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">End Time</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="bg-white divide-y divide-gray-200">
+                                            {filteredExecutions.map((execution) => (
+                                                <tr 
+                                                    key={execution.id} 
+                                                    className={`hover:bg-gray-50 ${selectedExecution?.id === execution.id ? 'bg-blue-50' : ''}`}
+                                                    onClick={() => setSelectedExecution(execution)}
+                                                >
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{execution.id}</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{execution.workflow}</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatDate(execution.startTime)}</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatDate(execution.endTime)}</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatDuration(execution.startTime, execution.endTime)}</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        {getStatusBadge(execution.status)}
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                        <button 
+                                                            className="text-blue-600 hover:text-blue-800"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setSelectedExecution(execution);
+                                                            }}
+                                                        >
+                                                            View Details
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                {filteredExecutions.length === 0 && (
+                                    <div className="text-center py-4 text-gray-500">
+                                        No executions found matching your criteria
+                                    </div>
+                                )}
+                            </div>
+                            
+                            {selectedExecution && (
+                                <div className="bg-white p-4 rounded-lg shadow mt-4">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h2 className="text-lg font-semibold">Execution Details: {selectedExecution.workflow}</h2>
+                                        <button 
+                                            className="text-gray-500 hover:text-gray-700"
+                                            onClick={() => setSelectedExecution(null)}
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                    
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                        <div>
+                                            <h3 className="text-md font-medium mb-2">General Information</h3>
+                                            <div className="bg-gray-50 p-3 rounded">
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    <div className="text-sm text-gray-500">ID:</div>
+                                                    <div className="text-sm">{selectedExecution.id}</div>
+                                                    
+                                                    <div className="text-sm text-gray-500">Workflow:</div>
+                                                    <div className="text-sm">{selectedExecution.workflow}</div>
+                                                    
+                                                    <div className="text-sm text-gray-500">Status:</div>
+                                                    <div className="text-sm">{getStatusBadge(selectedExecution.status)}</div>
+                                                    
+                                                    <div className="text-sm text-gray-500">Start Time:</div>
+                                                    <div className="text-sm">{formatDate(selectedExecution.startTime)}</div>
+                                                    
+                                                    <div className="text-sm text-gray-500">End Time:</div>
+                                                    <div className="text-sm">{formatDate(selectedExecution.endTime)}</div>
+                                                    
+                                                    <div className="text-sm text-gray-500">Duration:</div>
+                                                    <div className="text-sm">{formatDuration(selectedExecution.startTime, selectedExecution.endTime)}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        {selectedExecution.error && (
+                                            <div>
+                                                <h3 className="text-md font-medium mb-2">Error Information</h3>
+                                                <div className="bg-red-50 p-3 rounded border border-red-200">
+                                                    <div className="text-sm text-red-800">{selectedExecution.error}</div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                    
+                                    <h3 className="text-md font-medium mb-2">Node Execution Details</h3>
+                                    <div className="overflow-x-auto">
+                                        <table className="min-w-full divide-y divide-gray-200">
+                                            <thead className="bg-gray-50">
+                                                <tr>
+                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Node ID</th>
+                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration (ms)</th>
+                                                    {selectedExecution.nodes.some(node => node.error) && (
+                                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Error</th>
+                                                    )}
+                                                </tr>
+                                            </thead>
+                                            <tbody className="bg-white divide-y divide-gray-200">
+                                                {selectedExecution.nodes.map((node) => (
+                                                    <tr key={node.id}>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{node.id}</td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{node.name}</td>
+                                                        <td className="px-6 py-4 whitespace-nowrap">
+                                                            {getStatusBadge(node.status)}
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{node.duration}</td>
+                                                        {selectedExecution.nodes.some(node => node.error) && (
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-red-500">{node.error || '-'}</td>
+                                                        )}
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<WorkflowMonitoring />, document.getElementById('root'));
+    </script>
+</body>
+</html>

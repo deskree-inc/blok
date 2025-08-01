@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blok Workflow Deployment</title>
+    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body, html, #root {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div id="root" class="w-full h-screen"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Sample environments
+        const environments = [
+            { id: 'dev', name: 'Development', color: 'bg-blue-500', description: 'For development and testing' },
+            { id: 'staging', name: 'Staging', color: 'bg-yellow-500', description: 'Pre-production environment' },
+            { id: 'production', name: 'Production', color: 'bg-green-500', description: 'Live production environment' }
+        ];
+
+        // Sample workflows
+        const sampleWorkflows = [
+            { 
+                id: 'countries-api', 
+                name: 'Countries API', 
+                description: 'Fetches and displays country data',
+                version: '1.0.0',
+                lastDeployed: {
+                    dev: '2023-06-15T10:30:00Z',
+                    staging: '2023-06-10T14:45:00Z',
+                    production: null
+                },
+                status: {
+                    dev: 'running',
+                    staging: 'running',
+                    production: null
+                }
+            },
+            { 
+                id: 'weather-service', 
+                name: 'Weather Service', 
+                description: 'Gets weather information for a location',
+                version: '1.1.2',
+                lastDeployed: {
+                    dev: '2023-06-14T09:15:00Z',
+                    staging: '2023-06-12T11:20:00Z',
+                    production: '2023-06-01T08:00:00Z'
+                },
+                status: {
+                    dev: 'running',
+                    staging: 'running',
+                    production: 'running'
+                }
+            },
+            { 
+                id: 'user-auth', 
+                name: 'User Authentication', 
+                description: 'Handles user login and registration',
+                version: '2.0.1',
+                lastDeployed: {
+                    dev: '2023-06-13T16:45:00Z',
+                    staging: '2023-06-11T13:30:00Z',
+                    production: '2023-06-05T10:15:00Z'
+                },
+                status: {
+                    dev: 'running',
+                    staging: 'stopped',
+                    production: 'running'
+                }
+            },
+            { 
+                id: 'data-processing', 
+                name: 'Data Processing', 
+                description: 'Processes and transforms data',
+                version: '1.3.0',
+                lastDeployed: {
+                    dev: '2023-06-12T14:20:00Z',
+                    staging: null,
+                    production: null
+                },
+                status: {
+                    dev: 'error',
+                    staging: null,
+                    production: null
+                }
+            },
+            { 
+                id: 'email-notifications', 
+                name: 'Email Notifications', 
+                description: 'Sends email notifications',
+                version: '1.0.5',
+                lastDeployed: {
+                    dev: '2023-06-10T11:10:00Z',
+                    staging: '2023-06-08T15:30:00Z',
+                    production: '2023-06-02T09:45:00Z'
+                },
+                status: {
+                    dev: 'running',
+                    staging: 'running',
+                    production: 'running'
+                }
+            },
+        ];
+
+        // Sample deployment history
+        const deploymentHistory = [
+            {
+                id: 'deploy-1',
+                workflowId: 'countries-api',
+                environment: 'dev',
+                version: '1.0.0',
+                timestamp: '2023-06-15T10:30:00Z',
+                status: 'success',
+                user: 'john.doe@example.com',
+                duration: '45s'
+            },
+            {
+                id: 'deploy-2',
+                workflowId: 'countries-api',
+                environment: 'staging',
+                version: '1.0.0',
+                timestamp: '2023-06-10T14:45:00Z',
+                status: 'success',
+                user: 'jane.smith@example.com',
+                duration: '50s'
+            },
+            {
+                id: 'deploy-3',
+                workflowId: 'weather-service',
+                environment: 'production',
+                version: '1.1.2',
+                timestamp: '2023-06-01T08:00:00Z',
+                status: 'success',
+                user: 'admin@example.com',
+                duration: '1m 20s'
+            },
+            {
+                id: 'deploy-4',
+                workflowId: 'data-processing',
+                environment: 'dev',
+                version: '1.3.0',
+                timestamp: '2023-06-12T14:20:00Z',
+                status: 'failed',
+                user: 'john.doe@example.com',
+                duration: '30s',
+                error: 'Database connection failed'
+            }
+        ];
+
+        function formatDate(dateString) {
+            if (!dateString) return 'Never';
+            const date = new Date(dateString);
+            return date.toLocaleString();
+        }
+
+        function getStatusBadge(status) {
+            if (!status) return <span className="px-2 py-1 text-xs rounded-full bg-gray-200 text-gray-800">Not Deployed</span>;
+            
+            switch(status) {
+                case 'running':
+                    return <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Running</span>;
+                case 'stopped':
+                    return <span className="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">Stopped</span>;
+                case 'error':
+                    return <span className="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">Error</span>;
+                default:
+                    return <span className="px-2 py-1 text-xs rounded-full bg-gray-200 text-gray-800">{status}</span>;
+            }
+        }
+
+        function WorkflowDeployment() {
+            const [selectedWorkflow, setSelectedWorkflow] = useState(null);
+            const [searchTerm, setSearchTerm] = useState('');
+            const [selectedEnvironment, setSelectedEnvironment] = useState('dev');
+            const [isDeploying, setIsDeploying] = useState(false);
+            const [deploymentLogs, setDeploymentLogs] = useState([]);
+            const [showDeploymentModal, setShowDeploymentModal] = useState(false);
+            const [deploymentConfirmation, setDeploymentConfirmation] = useState('');
+            const [deploymentHistory, setDeploymentHistory] = useState([]);
+
+            useEffect(() => {
+                // In a real application, you would fetch workflows and deployment history from an API
+                // For now, we'll use the sample data
+                setDeploymentHistory(deploymentHistory);
+            }, []);
+
+            const filteredWorkflows = sampleWorkflows.filter(workflow => {
+                return workflow.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                       workflow.description.toLowerCase().includes(searchTerm.toLowerCase());
+            });
+
+            const handleDeploy = () => {
+                if (!selectedWorkflow) return;
+                setShowDeploymentModal(true);
+            };
+
+            const confirmDeploy = () => {
+                if (deploymentConfirmation !== selectedWorkflow.name) return;
+                
+                setShowDeploymentModal(false);
+                setIsDeploying(true);
+                setDeploymentLogs([]);
+                
+                // Simulate deployment logs
+                const logMessages = [
+                    { message: `Starting deployment of ${selectedWorkflow.name} to ${environments.find(e => e.id === selectedEnvironment).name}...`, timestamp: new Date().toISOString() },
+                    { message: 'Validating workflow configuration...', timestamp: new Date(Date.now() + 1000).toISOString() },
+                    { message: 'Preparing deployment package...', timestamp: new Date(Date.now() + 2000).toISOString() },
+                    { message: 'Uploading workflow files...', timestamp: new Date(Date.now() + 3000).toISOString() },
+                    { message: 'Configuring environment variables...', timestamp: new Date(Date.now() + 4000).toISOString() },
+                    { message: 'Starting workflow service...', timestamp: new Date(Date.now() + 5000).toISOString() },
+                    { message: 'Running health checks...', timestamp: new Date(Date.now() + 6000).toISOString() },
+                    { message: `Deployment of ${selectedWorkflow.name} to ${environments.find(e => e.id === selectedEnvironment).name} completed successfully!`, timestamp: new Date(Date.now() + 7000).toISOString() }
+                ];
+                
+                // Add logs with delay to simulate real-time deployment
+                logMessages.forEach((log, index) => {
+                    setTimeout(() => {
+                        setDeploymentLogs(prev => [...prev, log]);
+                        
+                        // When all logs are added, finish deployment
+                        if (index === logMessages.length - 1) {
+                            setTimeout(() => {
+                                setIsDeploying(false);
+                                
+                                // Update workflow status and last deployed time
+                                const updatedWorkflows = sampleWorkflows.map(w => {
+                                    if (w.id === selectedWorkflow.id) {
+                                        const updated = { ...w };
+                                        updated.lastDeployed = { ...updated.lastDeployed, [selectedEnvironment]: new Date().toISOString() };
+                                        updated.status = { ...updated.status, [selectedEnvironment]: 'running' };
+                                        return updated;
+                                    }
+                                    return w;
+                                });
+                                
+                                // Add to deployment history
+                                const newDeployment = {
+                                    id: `deploy-${Date.now()}`,
+                                    workflowId: selectedWorkflow.id,
+                                    environment: selectedEnvironment,
+                                    version: selectedWorkflow.version,
+                                    timestamp: new Date().toISOString(),
+                                    status: 'success',
+                                    user: 'current.user@example.com',
+                                    duration: '45s'
+                                };
+                                
+                                setDeploymentHistory(prev => [newDeployment, ...prev]);
+                            }, 1000);
+                        }
+                    }, index * 1000);
+                });
+            };
+
+            const handleStopWorkflow = () => {
+                if (!selectedWorkflow) return;
+                
+                // Update workflow status
+                const updatedWorkflows = sampleWorkflows.map(w => {
+                    if (w.id === selectedWorkflow.id) {
+                        const updated = { ...w };
+                        updated.status = { ...updated.status, [selectedEnvironment]: 'stopped' };
+                        return updated;
+                    }
+                    return w;
+                });
+                
+                // Update selected workflow
+                const updatedWorkflow = updatedWorkflows.find(w => w.id === selectedWorkflow.id);
+                setSelectedWorkflow(updatedWorkflow);
+                
+                alert(`${selectedWorkflow.name} has been stopped in ${environments.find(e => e.id === selectedEnvironment).name} environment.`);
+            };
+
+            const handleRestartWorkflow = () => {
+                if (!selectedWorkflow) return;
+                
+                // Update workflow status
+                const updatedWorkflows = sampleWorkflows.map(w => {
+                    if (w.id === selectedWorkflow.id) {
+                        const updated = { ...w };
+                        updated.status = { ...updated.status, [selectedEnvironment]: 'running' };
+                        return updated;
+                    }
+                    return w;
+                });
+                
+                // Update selected workflow
+                const updatedWorkflow = updatedWorkflows.find(w => w.id === selectedWorkflow.id);
+                setSelectedWorkflow(updatedWorkflow);
+                
+                alert(`${selectedWorkflow.name} has been restarted in ${environments.find(e => e.id === selectedEnvironment).name} environment.`);
+            };
+
+            const filteredDeploymentHistory = deploymentHistory.filter(deployment => {
+                if (selectedWorkflow) {
+                    return deployment.workflowId === selectedWorkflow.id && deployment.environment === selectedEnvironment;
+                }
+                return deployment.environment === selectedEnvironment;
+            });
+
+            return (
+                <div className="w-full h-full bg-gray-50">
+                    <div className="flex flex-col h-full">
+                        <div className="bg-teal-600 text-white p-4">
+                            <h1 className="text-2xl font-bold">Workflow Deployment</h1>
+                            <p className="text-sm opacity-80">Deploy and manage your workflows across environments</p>
+                        </div>
+                        
+                        <div className="flex-grow flex overflow-hidden">
+                            {/* Sidebar */}
+                            <div className="w-80 bg-white border-r border-gray-200 flex flex-col overflow-hidden">
+                                <div className="p-4 border-b border-gray-200">
+                                    <input 
+                                        type="text" 
+                                        className="w-full p-2 border rounded"
+                                        placeholder="Search workflows..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                    />
+                                </div>
+                                
+                                <div className="flex-grow overflow-y-auto">
+                                    {filteredWorkflows.length > 0 ? (
+                                        <div className="divide-y divide-gray-200">
+                                            {filteredWorkflows.map(workflow => (
+                                                <div 
+                                                    key={workflow.id}
+                                                    className={`p-4 cursor-pointer ${selectedWorkflow?.id === workflow.id ? 'bg-teal-50 border-l-4 border-teal-500' : 'hover:bg-gray-50'}`}
+                                                    onClick={() => setSelectedWorkflow(workflow)}
+                                                >
+                                                    <div className="font-medium">{workflow.name}</div>
+                                                    <div className="text-sm text-gray-500 mb-2">{workflow.description}</div>
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="text-xs text-teal-600">v{workflow.version}</div>
+                                                        {getStatusBadge(workflow.status[selectedEnvironment])}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="p-4 text-center text-gray-500">
+                                            No workflows found matching your search
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                            
+                            {/* Main Content */}
+                            <div className="flex-grow overflow-hidden flex flex-col">
+                                {/* Environment Selector */}
+                                <div className="bg-white p-4 border-b border-gray-200">
+                                    <div className="flex space-x-4">
+                                        {environments.map(env => (
+                                            <button
+                                                key={env.id}
+                                                className={`px-4 py-2 rounded-md text-sm font-medium ${selectedEnvironment === env.id ? `${env.color} text-white` : 'bg-gray-100 text-gray-800 hover:bg-gray-200'}`}
+                                                onClick={() => setSelectedEnvironment(env.id)}
+                                            >
+                                                {env.name}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                
+                                {/* Workflow Details */}
+                                <div className="flex-grow overflow-y-auto">
+                                    {selectedWorkflow ? (
+                                        <div className="p-6">
+                                            <div className="flex justify-between items-center mb-6">
+                                                <div>
+                                                    <h2 className="text-2xl font-bold">{selectedWorkflow.name}</h2>
+                                                    <p className="text-gray-500">{selectedWorkflow.description}</p>
+                                                </div>
+                                                <div className="flex space-x-2">
+                                                    {selectedWorkflow.status[selectedEnvironment] === 'running' && (
+                                                        <button 
+                                                            className="px-4 py-2 bg-yellow-500 text-white rounded-md text-sm font-medium hover:bg-yellow-600"
+                                                            onClick={handleStopWorkflow}
+                                                        >
+                                                            Stop Workflow
+                                                        </button>
+                                                    )}
+                                                    {selectedWorkflow.status[selectedEnvironment] === 'stopped' && (
+                                                        <button 
+                                                            className="px-4 py-2 bg-green-500 text-white rounded-md text-sm font-medium hover:bg-green-600"
+                                                            onClick={handleRestartWorkflow}
+                                                        >
+                                                            Restart Workflow
+                                                        </button>
+                                                    )}
+                                                    <button 
+                                                        className={`px-4 py-2 rounded-md text-sm font-medium ${isDeploying ? 'bg-gray-300 cursor-not-allowed' : 'bg-teal-600 text-white hover:bg-teal-700'}`}
+                                                        onClick={handleDeploy}
+                                                        disabled={isDeploying}
+                                                    >
+                                                        {isDeploying ? 'Deploying...' : 'Deploy'}
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
+                                                <div className="px-6 py-4 border-b border-gray-200">
+                                                    <h3 className="text-lg font-medium">Deployment Status</h3>
+                                                </div>
+                                                <div className="p-6">
+                                                    <div className="grid grid-cols-3 gap-6">
+                                                        {environments.map(env => (
+                                                            <div key={env.id} className="bg-gray-50 p-4 rounded-lg">
+                                                                <div className="flex items-center mb-2">
+                                                                    <div className={`w-3 h-3 rounded-full ${env.color} mr-2`}></div>
+                                                                    <h4 className="font-medium">{env.name}</h4>
+                                                                </div>
+                                                                <div className="text-sm text-gray-500 mb-2">{env.description}</div>
+                                                                <div className="mb-2">
+                                                                    <span className="text-xs text-gray-500">Status: </span>
+                                                                    {getStatusBadge(selectedWorkflow.status[env.id])}
+                                                                </div>
+                                                                <div className="text-xs text-gray-500">
+                                                                    Last Deployed: {formatDate(selectedWorkflow.lastDeployed[env.id])}
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {isDeploying && (
+                                                <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
+                                                    <div className="px-6 py-4 border-b border-gray-200">
+                                                        <h3 className="text-lg font-medium">Deployment Logs</h3>
+                                                    </div>
+                                                    <div className="p-6 bg-gray-900 text-gray-200 font-mono text-sm overflow-y-auto max-h-64">
+                                                        {deploymentLogs.map((log, index) => (
+                                                            <div key={index} className="mb-1">
+                                                                <span className="text-gray-500">[{new Date(log.timestamp).toLocaleTimeString()}]</span> {log.message}
+                                                            </div>
+                                                        ))}
+                                                        {deploymentLogs.length === 0 && (
+                                                            <div className="text-gray-500">Preparing deployment...</div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                                                <div className="px-6 py-4 border-b border-gray-200">
+                                                    <h3 className="text-lg font-medium">Deployment History</h3>
+                                                </div>
+                                                <div className="overflow-x-auto">
+                                                    {filteredDeploymentHistory.length > 0 ? (
+                                                        <table className="min-w-full divide-y divide-gray-200">
+                                                            <thead className="bg-gray-50">
+                                                                <tr>
+                                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Version</th>
+                                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
+                                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody className="bg-white divide-y divide-gray-200">
+                                                                {filteredDeploymentHistory.map(deployment => (
+                                                                    <tr key={deployment.id}>
+                                                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{deployment.version}</td>
+                                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatDate(deployment.timestamp)}</td>
+                                                                        <td className="px-6 py-4 whitespace-nowrap">
+                                                                            <span className={`px-2 py-1 text-xs rounded-full ${deployment.status === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                                                                {deployment.status}
+                                                                            </span>
+                                                                        </td>
+                                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{deployment.user}</td>
+                                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{deployment.duration}</td>
+                                                                    </tr>
+                                                                ))}
+                                                            </tbody>
+                                                        </table>
+                                                    ) : (
+                                                        <div className="p-6 text-center text-gray-500">
+                                                            No deployment history available for this workflow in the selected environment
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center justify-center h-full">
+                                            <div className="text-center p-8">
+                                                <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path>
+                                                </svg>
+                                                <h3 className="text-lg font-medium text-gray-900 mb-2">Select a Workflow</h3>
+                                                <p className="text-gray-500">Choose a workflow from the sidebar to view deployment options</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Deployment Confirmation Modal */}
+                    {showDeploymentModal && (
+                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                            <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+                                <div className="px-6 py-4 border-b border-gray-200">
+                                    <h3 className="text-lg font-medium text-gray-900">Confirm Deployment</h3>
+                                </div>
+                                <div className="p-6">
+                                    <p className="mb-4 text-gray-700">
+                                        You are about to deploy <strong>{selectedWorkflow?.name}</strong> version <strong>{selectedWorkflow?.version}</strong> to the <strong>{environments.find(e => e.id === selectedEnvironment)?.name}</strong> environment.
+                                    </p>
+                                    <p className="mb-4 text-gray-700">
+                                        Please type <strong>{selectedWorkflow?.name}</strong> to confirm.
+                                    </p>
+                                    <input
+                                        type="text"
+                                        className="w-full p-2 border rounded mb-4"
+                                        value={deploymentConfirmation}
+                                        onChange={(e) => setDeploymentConfirmation(e.target.value)}
+                                        placeholder={`Type ${selectedWorkflow?.name} to confirm`}
+                                    />
+                                    <div className="flex justify-end space-x-2">
+                                        <button
+                                            className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md text-sm font-medium hover:bg-gray-300"
+                                            onClick={() => {
+                                                setShowDeploymentModal(false);
+                                                setDeploymentConfirmation('');
+                                            }}
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            className={`px-4 py-2 rounded-md text-sm font-medium ${deploymentConfirmation === selectedWorkflow?.name ? 'bg-teal-600 text-white hover:bg-teal-700' : 'bg-gray-300 cursor-not-allowed text-gray-500'}`}
+                                            onClick={confirmDeploy}
+                                            disabled={deploymentConfirmation !== selectedWorkflow?.name}
+                                        >
+                                            Deploy
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        ReactDOM.render(<WorkflowDeployment />, document.getElementById('root'));
+    </script>
+</body>
+</html>

@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blok Workflow API Documentation</title>
+    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-react@4.15.5/dist/swagger-ui-react.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-react@4.15.5/swagger-ui-react.css" />
+    <style>
+        body, html, #root {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        .swagger-ui .opblock.opblock-get .opblock-summary-method { background: #61affe; }
+        .swagger-ui .opblock.opblock-post .opblock-summary-method { background: #49cc90; }
+        .swagger-ui .opblock.opblock-put .opblock-summary-method { background: #fca130; }
+        .swagger-ui .opblock.opblock-delete .opblock-summary-method { background: #f93e3e; }
+        .swagger-ui .opblock.opblock-patch .opblock-summary-method { background: #50e3c2; }
+    </style>
+</head>
+<body>
+    <div id="root" class="w-full h-screen"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Sample OpenAPI specs for workflows
+        const sampleSpecs = {
+            'countries-api': {
+                openapi: "3.0.0",
+                info: {
+                    title: "Countries API Workflow",
+                    version: "1.0.0",
+                    description: "API for fetching and displaying country data"
+                },
+                servers: [
+                    {
+                        url: "http://localhost:3000",
+                        description: "Local development server"
+                    }
+                ],
+                paths: {
+                    "/countries": {
+                        get: {
+                            summary: "Get all countries",
+                            description: "Returns a list of all countries with basic information",
+                            operationId: "getAllCountries",
+                            responses: {
+                                "200": {
+                                    description: "Successful operation",
+                                    content: {
+                                        "application/json": {
+                                            schema: {
+                                                type: "object",
+                                                properties: {
+                                                    success: {
+                                                        type: "boolean",
+                                                        example: true
+                                                    },
+                                                    data: {
+                                                        type: "array",
+                                                        items: {
+                                                            type: "object",
+                                                            properties: {
+                                                                name: {
+                                                                    type: "string",
+                                                                    example: "Afghanistan"
+                                                                },
+                                                                alpha2Code: {
+                                                                    type: "string",
+                                                                    example: "AF"
+                                                                },
+                                                                alpha3Code: {
+                                                                    type: "string",
+                                                                    example: "AFG"
+                                                                },
+                                                                capital: {
+                                                                    type: "string",
+                                                                    example: "Kabul"
+                                                                },
+                                                                region: {
+                                                                    type: "string",
+                                                                    example: "Asia"
+                                                                },
+                                                                population: {
+                                                                    type: "integer",
+                                                                    example: 27657145
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                "500": {
+                                    description: "Internal server error",
+                                    content: {
+                                        "application/json": {
+                                            schema: {
+                                                type: "object",
+                                                properties: {
+                                                    success: {
+                                                        type: "boolean",
+                                                        example: false
+                                                    },
+                                                    error: {
+                                                        type: "string",
+                                                        example: "Error fetching country data"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "/countries/{code}": {
+                        get: {
+                            summary: "Get country by code",
+                            description: "Returns detailed information about a specific country",
+                            operationId: "getCountryByCode",
+                            parameters: [
+                                {
+                                    name: "code",
+                                    in: "path",
+                                    description: "The alpha2Code or alpha3Code of the country",
+                                    required: true,
+                                    schema: {
+                                        type: "string"
+                                    },
+                                    example: "US"
+                                }
+                            ],
+                            responses: {
+                                "200": {
+                                    description: "Successful operation",
+                                    content: {
+                                        "application/json": {
+                                            schema: {
+                                                type: "object",
+                                                properties: {
+                                                    success: {
+                                                        type: "boolean",
+                                                        example: true
+                                                    },
+                                                    data: {
+                                                        type: "object",
+                                                        properties: {
+                                                            name: {
+                                                                type: "string",
+                                                                example: "United States of America"
+                                                            },
+                                                            topLevelDomain: {
+                                                                type: "array",
+                                                                items: {
+                                                                    type: "string"
+                                                                },
+                                                                example: [".us"]
+                                                            },
+                                                            alpha2Code: {
+                                                                type: "string",
+                                                                example: "US"
+                                                            },
+                                                            alpha3Code: {
+                                                                type: "string",
+                                                                example: "USA"
+                                                            },
+                                                            capital: {
+                                                                type: "string",
+                                                                example: "Washington, D.C."
+                                                            },
+                                                            region: {
+                                                                type: "string",
+                                                                example: "Americas"
+                                                            },
+                                                            population: {
+                                                                type: "integer",
+                                                                example: 323947000
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                "404": {
+                                    description: "Country not found",
+                                    content: {
+                                        "application/json": {
+                                            schema: {
+                                                type: "object",
+                                                properties: {
+                                                    success: {
+                                                        type: "boolean",
+                                                        example: false
+                                                    },
+                                                    error: {
+                                                        type: "string",
+                                                        example: "Country not found"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                "500": {
+                                    description: "Internal server error",
+                                    content: {
+                                        "application/json": {
+                                            schema: {
+                                                type: "object",
+                                                properties: {
+                                                    success: {
+                                                        type: "boolean",
+                                                        example: false
+                                                    },
+                                                    error: {
+                                                        type: "string",
+                                                        example: "Error fetching country data"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            'weather-service': {
+                openapi: "3.0.0",
+                info: {
+                    title: "Weather Service Workflow",
+                    version: "1.1.2",
+                    description: "API for fetching weather information for a specific location"
+                },
+                servers: [
+                    {
+                        url: "http://localhost:3000",
+                        description: "Local development server"
+                    }
+                ],
+                paths: {
+                    "/weather": {
+                        get: {
+                            summary: "Get current weather",
+                            description: "Returns current weather information for a specified location",
+                            operationId: "getCurrentWeather",
+                            parameters: [
+                                {
+                                    name: "city",
+                                    in: "query",
+                                    description: "The name of the city",
+                                    required: true,
+                                    schema: {
+                                        type: "string"
+                                    },
+                                    example: "London"
+                                },
+                                {
+                                    name: "country",
+                                    in: "query",
+                                    description: "The country code",
+                                    required: false,
+                                    schema: {
+                                        type: "string"
+                                    },
+                                    example: "GB"
+                                },
+                                {
+                                    name: "units",
+                                    in: "query",
+                                    description: "The units of measurement",
+                                    required: false,
+                                    schema: {
+                                        type: "string",
+                                        enum: ["metric", "imperial"],
+                                        default: "metric"
+                                    },
+                                    example: "metric"
+                                }
+                            ],
+                            responses: {
+                                "200": {
+                                    description: "Successful operation",
+                                    content: {
+                                        "application/json": {
+                                            schema: {
+                                                type: "object",
+                                                properties: {
+                                                    success: {
+                                                        type: "boolean",
+                                                        example: true
+                                                    },
+                                                    data: {
+                                                        type: "object",
+                                                        properties: {
+                                                            location: {
+                                                                type: "object",
+                                                                properties: {
+                                                                    name: {
+                                                                        type: "string",
+                                                                        example: "London"
+                                                                    },
+                                                                    country: {
+                                                                        type: "string",
+                                                                        example: "GB"
+                                                                    },
+                                                                    coordinates: {
+                                                                        type: "object",
+                                                                        properties: {
+                                                                            lat: {
+                                                                                type: "number",
+                                                                                example: 51.5074
+                                                                            },
+                                                                            lon: {
+                                                                                type: "number",
+                                                                                example: -0.1278
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            },
+                                                            weather: {
+                                                                type: "object",
+                                                                properties: {
+                                                                    description: {
+                                                                        type: "string",
+                                                                        example: "scattered clouds"
+                                                                    },
+                                                                    icon: {
+                                                                        type: "string",
+                                                                        example: "03d"
+                                                                    },
+                                                                    temperature: {
+                                                                        type: "number",
+                                                                        example: 18.5
+                                                                    },
+                                                                    feels_like: {
+                                                                        type: "number",
+                                                                        example: 17.9
+                                                                    },
+                                                                    humidity: {
+                                                                        type: "integer",
+                                                                        example: 65
+                                                                    },
+                                                                    pressure: {
+                                                                        type: "integer",
+                                                                        example: 1012
+                                                                    },
+                                                                    wind: {
+                                                                        type: "object",
+                                                                        properties: {
+                                                                            speed: {
+                                                                                type: "number",
+                                                                                example: 4.1
+                                                                            },
+                                                                            direction: {
+                                                                                type: "integer",
+                                                                                example: 270
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            },
+                                                            timestamp: {
+                                                                type: "string",
+                                                                format: "date-time",
+                                                                example: "2023-06-15T12:30:45Z"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                "400": {
+                                    description: "Invalid request",
+                                    content: {
+                                        "application/json": {
+                                            schema: {
+                                                type: "object",
+                                                properties: {
+                                                    success: {
+                                                        type: "boolean",
+                                                        example: false
+                                                    },
+                                                    error: {
+                                                        type: "string",
+                                                        example: "Missing required parameter: city"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                "500": {
+                                    description: "Internal server error",
+                                    content: {
+                                        "application/json": {
+                                            schema: {
+                                                type: "object",
+                                                properties: {
+                                                    success: {
+                                                        type: "boolean",
+                                                        example: false
+                                                    },
+                                                    error: {
+                                                        type: "string",
+                                                        example: "Error fetching weather data"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "/weather/forecast": {
+                        get: {
+                            summary: "Get weather forecast",
+                            description: "Returns a 5-day weather forecast for a specified location",
+                            operationId: "getWeatherForecast",
+                            parameters: [
+                                {
+                                    name: "city",
+                                    in: "query",
+                                    description: "The name of the city",
+                                    required: true,
+                                    schema: {
+                                        type: "string"
+                                    },
+                                    example: "London"
+                                },
+                                {
+                                    name: "country",
+                                    in: "query",
+                                    description: "The country code",
+                                    required: false,
+                                    schema: {
+                                        type: "string"
+                                    },
+                                    example: "GB"
+                                },
+                                {
+                                    name: "units",
+                                    in: "query",
+                                    description: "The units of measurement",
+                                    required: false,
+                                    schema: {
+                                        type: "string",
+                                        enum: ["metric", "imperial"],
+                                        default: "metric"
+                                    },
+                                    example: "metric"
+                                }
+                            ],
+                            responses: {
+                                "200": {
+                                    description: "Successful operation",
+                                    content: {
+                                        "application/json": {
+                                            schema: {
+                                                type: "object",
+                                                properties: {
+                                                    success: {
+                                                        type: "boolean",
+                                                        example: true
+                                                    },
+                                                    data: {
+                                                        type: "object",
+                                                        properties: {
+                                                            location: {
+                                                                type: "object",
+                                                                properties: {
+                                                                    name: {
+                                                                        type: "string",
+                                                                        example: "London"
+                                                                    },
+                                                                    country: {
+                                                                        type: "string",
+                                                                        example: "GB"
+                                                                    },
+                                                                    coordinates: {
+                                                                        type: "object",
+                                                                        properties: {
+                                                                            lat: {
+                                                                                type: "number",
+                                                                                example: 51.5074
+                                                                            },
+                                                                            lon: {
+                                                                                type: "number",
+                                                                                example: -0.1278
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            },
+                                                            forecast: {
+                                                                type: "array",
+                                                                items: {
+                                                                    type: "object",
+                                                                    properties: {
+                                                                        date: {
+                                                                            type: "string",
+                                                                            format: "date",
+                                                                            example: "2023-06-15"
+                                                                        },
+                                                                        weather: {
+                                                                            type: "object",
+                                                                            properties: {
+                                                                                description: {
+                                                                                    type: "string",
+                                                                                    example: "scattered clouds"
+                                                                                },
+                                                                                icon: {
+                                                                                    type: "string",
+                                                                                    example: "03d"
+                                                                                },
+                                                                                temperature: {
+                                                                                    type: "object",
+                                                                                    properties: {
+                                                                                        min: {
+                                                                                            type: "number",
+                                                                                            example: 15.2
+                                                                                        },
+                                                                                        max: {
+                                                                                            type: "number",
+                                                                                            example: 19.8
+                                                                                        }
+                                                                                    }
+                                                                                },
+                                                                                humidity: {
+                                                                                    type: "integer",
+                                                                                    example: 65
+                                                                                },
+                                                                                wind: {
+                                                                                    type: "object",
+                                                                                    properties: {
+                                                                                        speed: {
+                                                                                            type: "number",
+                                                                                            example: 4.1
+                                                                                        },
+                                                                                        direction: {
+                                                                                            type: "integer",
+                                                                                            example: 270
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                "400": {
+                                    description: "Invalid request",
+                                    content: {
+                                        "application/json": {
+                                            schema: {
+                                                type: "object",
+                                                properties: {
+                                                    success: {
+                                                        type: "boolean",
+                                                        example: false
+                                                    },
+                                                    error: {
+                                                        type: "string",
+                                                        example: "Missing required parameter: city"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                "500": {
+                                    description: "Internal server error",
+                                    content: {
+                                        "application/json": {
+                                            schema: {
+                                                type: "object",
+                                                properties: {
+                                                    success: {
+                                                        type: "boolean",
+                                                        example: false
+                                                    },
+                                                    error: {
+                                                        type: "string",
+                                                        example: "Error fetching weather data"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        // Sample workflows list
+        const sampleWorkflows = [
+            { 
+                id: 'countries-api', 
+                name: 'Countries API', 
+                description: 'Fetches and displays country data',
+                version: '1.0.0',
+                author: 'Blok Team',
+                tags: ['api', 'countries', 'data'],
+                category: 'Data Fetching'
+            },
+            { 
+                id: 'weather-service', 
+                name: 'Weather Service', 
+                description: 'Gets weather information for a location',
+                version: '1.1.2',
+                author: 'Blok Team',
+                tags: ['api', 'weather', 'location'],
+                category: 'Data Fetching'
+            },
+            { 
+                id: 'user-auth', 
+                name: 'User Authentication', 
+                description: 'Handles user login and registration',
+                version: '2.0.1',
+                author: 'Blok Team',
+                tags: ['auth', 'user', 'security'],
+                category: 'Authentication'
+            },
+            { 
+                id: 'data-processing', 
+                name: 'Data Processing', 
+                description: 'Processes and transforms data',
+                version: '1.3.0',
+                author: 'Blok Team',
+                tags: ['data', 'processing', 'transform'],
+                category: 'Data Processing'
+            },
+            { 
+                id: 'email-notifications', 
+                name: 'Email Notifications', 
+                description: 'Sends email notifications',
+                version: '1.0.5',
+                author: 'Blok Team',
+                tags: ['email', 'notifications'],
+                category: 'Notifications'
+            },
+        ];
+
+        // Sample categories
+        const categories = [
+            'All',
+            'Data Fetching',
+            'Data Processing',
+            'Authentication',
+            'Notifications'
+        ];
+
+        function WorkflowApiDocs() {
+            const [selectedWorkflow, setSelectedWorkflow] = useState(null);
+            const [searchTerm, setSearchTerm] = useState('');
+            const [selectedCategory, setSelectedCategory] = useState('All');
+
+            useEffect(() => {
+                // In a real application, you would fetch workflows from an API
+                // For now, we'll use the sample data
+            }, []);
+
+            const filteredWorkflows = sampleWorkflows.filter(workflow => {
+                const matchesSearch = 
+                    workflow.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    workflow.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    workflow.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+                
+                const matchesCategory = 
+                    selectedCategory === 'All' || 
+                    workflow.category === selectedCategory;
+                
+                return matchesSearch && matchesCategory;
+            });
+
+            return (
+                <div className="w-full h-full bg-gray-50">
+                    <div className="flex flex-col h-full">
+                        <div className="bg-indigo-600 text-white p-4">
+                            <h1 className="text-2xl font-bold">Workflow API Documentation</h1>
+                            <p className="text-sm opacity-80">OpenAPI specifications for all workflows</p>
+                        </div>
+                        
+                        <div className="flex-grow flex overflow-hidden">
+                            {/* Sidebar */}
+                            <div className="w-80 bg-white border-r border-gray-200 flex flex-col overflow-hidden">
+                                <div className="p-4 border-b border-gray-200">
+                                    <input 
+                                        type="text" 
+                                        className="w-full p-2 border rounded"
+                                        placeholder="Search workflows..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                    />
+                                </div>
+                                
+                                <div className="p-4 border-b border-gray-200">
+                                    <h2 className="text-sm font-medium text-gray-500 mb-2">Categories</h2>
+                                    <div className="flex flex-wrap gap-2">
+                                        {categories.map(category => (
+                                            <button
+                                                key={category}
+                                                className={`px-3 py-1 text-xs font-medium rounded-full ${selectedCategory === category ? 'bg-indigo-100 text-indigo-800' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'}`}
+                                                onClick={() => setSelectedCategory(category)}
+                                            >
+                                                {category}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                
+                                <div className="flex-grow overflow-y-auto">
+                                    {filteredWorkflows.length > 0 ? (
+                                        <div className="divide-y divide-gray-200">
+                                            {filteredWorkflows.map(workflow => (
+                                                <div 
+                                                    key={workflow.id}
+                                                    className={`p-4 cursor-pointer ${selectedWorkflow?.id === workflow.id ? 'bg-indigo-50 border-l-4 border-indigo-500' : 'hover:bg-gray-50'}`}
+                                                    onClick={() => setSelectedWorkflow(workflow)}
+                                                >
+                                                    <div className="font-medium">{workflow.name}</div>
+                                                    <div className="text-sm text-gray-500 mb-2">{workflow.description}</div>
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="text-xs text-indigo-600">v{workflow.version}</div>
+                                                        <div className="flex flex-wrap gap-1">
+                                                            {workflow.tags.map(tag => (
+                                                                <span key={tag} className="px-2 py-0.5 text-xs bg-gray-100 rounded-full">{tag}</span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="p-4 text-center text-gray-500">
+                                            No workflows found matching your criteria
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                            
+                            {/* Main Content */}
+                            <div className="flex-grow overflow-hidden flex flex-col">
+                                {selectedWorkflow && sampleSpecs[selectedWorkflow.id] ? (
+                                    <div className="flex-grow overflow-y-auto">
+                                        <div className="bg-white p-4 border-b border-gray-200">
+                                            <h1 className="text-xl font-bold">{selectedWorkflow.name} API</h1>
+                                            <div className="flex items-center mt-2">
+                                                <span className="text-sm bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded mr-2">{selectedWorkflow.category}</span>
+                                                <span className="text-sm text-gray-500">Version {selectedWorkflow.version}</span>
+                                                <span className="text-sm text-gray-500 ml-4">By {selectedWorkflow.author}</span>
+                                            </div>
+                                        </div>
+                                        <div className="p-4">
+                                            {/* In a real application, you would use the SwaggerUI component here */}
+                                            <pre className="bg-gray-800 text-white p-4 rounded overflow-auto">
+                                                {JSON.stringify(sampleSpecs[selectedWorkflow.id], null, 2)}
+                                            </pre>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="flex-grow flex items-center justify-center">
+                                        <div className="text-center p-8">
+                                            <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                            </svg>
+                                            <h3 className="text-lg font-medium text-gray-900 mb-2">Select a workflow</h3>
+                                            <p className="text-gray-500">Choose a workflow from the sidebar to view its API documentation</p>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<WorkflowApiDocs />, document.getElementById('root'));
+    </script>
+</body>
+</html>
