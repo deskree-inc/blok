@@ -43,6 +43,6 @@
 	"engines": {
 		"pnpm": ">=10.2.0"
 	},
-	"packageManager": "pnpm@10.11.1",
+	"packageManager": "pnpm@10.14.0",
 	"private": true
 }
