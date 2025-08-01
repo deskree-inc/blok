@@ -134,11 +134,6 @@
 					"icon": "linkedin"
 				},
 				{
-					"anchor": "Reddit",
-					"href": "https://www.reddit.com/r/nanoservice",
-					"icon": "reddit"
-				},
-				{
 					"anchor": "Discord",
 					"href": "https://discord.gg/uFs9bYwfM9",
 					"icon": "discord"
@@ -172,7 +167,6 @@
 			"x": "https://x.com/blok_build",
 			"github": "https://github.com/deskree-inc",
 			"linkedin": "https://linkedin.com/company/deskree",
-			"reddit": "https://www.reddit.com/r/nanoservice",
 			"discord": "https://discord.gg/etgJcHSrR5",
 			"youtube": "https://www.youtube.com/@deskree"
 		},
