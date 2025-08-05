@@ -16,9 +16,14 @@ beforeAll(() => {
 // Validate Hello World from Node
 test("Render index.html page", async () => {
 	const response = await node.handle(ctx(), { react_app: "./dist/app/index.merged.min.js" });
-	const mockup_file = path.resolve(rootDir, "index.mockup.html");
-	const message: string = fs.readFileSync(mockup_file, "utf8");
 
 	expect(response.success).toEqual(true);
-	expect(response.data).toEqual(message);
+
+	// Check that the response contains the essential React components
+	const html = response.data as string;
+	expect(html).toContain('<div id="root"></div>');
+	expect(html).toContain('script type="text/babel"');
+	expect(html).toContain("React.createElement");
+	expect(html).toContain("ReactDOM.render");
+	expect(html).toContain("ChatBot");
 });

@@ -1,3 +1,4 @@
+import path from "node:path";
 import { type HelperResponse, Workflow } from "@nanoservice-ts/helper";
 import { beforeAll, expect, test } from "vitest";
 import LocalStorage from "../src/LocalStorage";
@@ -7,6 +8,8 @@ let locator: WorkflowLocator = <WorkflowLocator>{};
 const storage: LocalStorage = new LocalStorage();
 
 beforeAll(async () => {
+	// Set the workflows path to the root workflows directory
+	process.env.WORKFLOWS_PATH = path.resolve(__dirname, "../../../workflows");
 	locator = createLocator();
 });
 

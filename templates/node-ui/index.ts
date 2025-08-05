@@ -45,7 +45,7 @@ export default class React extends NanoService<InputType> {
 		const response = new NanoServiceResponse();
 		let file_path = inputs.react_app;
 		if (file_path === undefined || file_path === "") file_path = "./app/index.merged.min.js";
-		const react_script_template = '<script type="text/babel">REACT_SCRIPT</script>';
+		const react_script_template = '<script type="text/babel">\nREACT_SCRIPT\n</script>';
 
 		const title = inputs.title || "React App";
 		const scripts = inputs.scripts || "";
@@ -58,7 +58,7 @@ export default class React extends NanoService<InputType> {
 			// Load React script from the current module location
 			const min_file = this.root(file_path);
 			let react_app = fs.readFileSync(min_file, "utf8");
-			react_app = react_script_template.replace("REACT_SCRIPT", `\n${react_app}\n`);
+			react_app = react_script_template.replace("REACT_SCRIPT", react_app);
 
 			// Read index.html file from the current module location
 			const content = fs.readFileSync(this.root(index_html), "utf8");

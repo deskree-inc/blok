@@ -45,7 +45,16 @@ export default class LocalStorage extends ResolverBase {
 
 			if (workflowFileType === "xml") {
 				const xml = fs.readFileSync(workflowPathJson, "utf8");
-				const json = new XMLParser({ isArray: (tag: string) => tag === "steps" }).parse(xml);
+				const json = new XMLParser({
+					isArray: (tag: string) => tag === "steps",
+					ignoreDeclaration: true,
+					ignoreAttributes: false,
+				}).parse(xml);
+
+				// Remove the ?xml key if it exists
+				if (json["?xml"] !== undefined) {
+					json["?xml"] = undefined;
+				}
 
 				return json;
 			}
