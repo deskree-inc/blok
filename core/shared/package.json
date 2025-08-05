@@ -4,9 +4,17 @@
 	"description": "Shared class, interfaces and types",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"require": "./dist/index.js"
+		}
+	},
+	"files": ["dist"],
 	"scripts": {
 		"build:dev": "tsc --watch",
-		"build": "rm -rf dist && npx tsc"
+		"build": "rimraf dist && npx tsc"
 	},
 	"keywords": ["api", "blueprint"],
 	"author": "Deskree Inc",

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<name>World Countries</name>
+<description>Workflow description</description>
+<version>1.0.0</version>
+<trigger>
+  <http>
+    <method>GET</method>
+    <path>/</path>
+    <accept>application/json</accept>
+  </http>
+</trigger>
+<steps>
+  <name>get-countries-api</name>
+  <node>@nanoservice-ts/api-call</node>
+  <type>module</type>
+</steps>
+<nodes>
+  <get-countries-api>
+    <inputs>
+      <url>https://countriesnow.space/api/v0.1/countries/capital</url>
+      <method>GET</method>
+      <headers>
+        <Content-Type>application/json</Content-Type>
+      </headers>
+      <responseType>application/json</responseType>
+    </inputs>
+  </get-countries-api>
+</nodes>

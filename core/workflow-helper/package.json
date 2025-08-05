@@ -7,11 +7,18 @@
 	},
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"require": "./dist/index.js"
+		}
+	},
 	"files": ["dist"],
 	"author": "Marco A. Castillo Della Sera",
 	"license": "MIT",
 	"scripts": {
-		"build": "rm -rf dist && npx tsc",
+		"build": "rimraf dist && npx tsc",
 		"build:dev": "tsc --watch",
 		"test:dev": "vitest",
 		"test": "vitest run",

@@ -23,6 +23,9 @@ importers:
       nx:
         specifier: 20.4.0
         version: 20.4.0
+      rimraf:
+        specifier: ^6.0.1
+        version: 6.0.1
       typedoc:
         specifier: ^0.27.6
         version: 0.27.9(typescript@5.8.3)

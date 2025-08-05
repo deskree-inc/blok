@@ -31,6 +31,7 @@
 		"husky": "^9.1.7",
 		"lint-staged": "^15.4.3",
 		"nx": "20.4.0",
+		"rimraf": "^6.0.1",
 		"typedoc": "^0.27.6",
 		"typedoc-plugin-markdown": "^4.4.1"
 	},

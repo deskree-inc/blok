@@ -9,13 +9,20 @@
 	"license": "Apache-2.0",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"require": "./dist/index.js"
+		}
+	},
 	"scripts": {
 		"test:dev": "vitest",
 		"test": "vitest run",
-		"build:ts": "rm -rf dist && tsc",
+		"build:ts": "rimraf dist && tsc",
 		"build:dev": "nodemon",
-		"build:babel": "rm -rf dist/app/index.merged.min.js && babel dist/app --out-file dist/app/index.merged.min.js",
-		"build": "npm run build:ts && npm run build:babel && cp index.html dist/index.html"
+		"build:babel": "rimraf dist/app/index.merged.min.js && babel dist/app --out-file dist/app/index.merged.min.js",
+		"build": "npm run build:ts && npm run build:babel && node copy-html.js"
 	},
 	"devDependencies": {
 		"@types/node": "^22.13.4",
@@ -27,7 +34,9 @@
 		"@babel/preset-env": "^7.26.8",
 		"@babel/preset-react": "^7.26.3",
 		"babel-minify": "^0.5.2",
-		"nodemon": "^3.1.9"
+		"nodemon": "^3.1.9",
+		"rimraf": "^6.0.1",
+		"copyfiles": "^2.4.1"
 	},
 	"dependencies": {
 		"@nanoservice-ts/shared": "workspace:*",
