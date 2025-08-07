@@ -1,6 +1,6 @@
-from core.nanoservice import NanoService
+from core.blok_service import BlokService
 from core.types.context import Context
-from core.types.nanoservice_response import NanoServiceResponse
+from core.types.blok_response import BlokResponse
 from core.types.global_error import GlobalError
 from typing import Any, Dict
 import traceback
@@ -14,7 +14,7 @@ import torch # type: ignore
 import warnings
 warnings.filterwarnings("ignore", category=FutureWarning)
 
-class GenerateCaption(NanoService):
+class GenerateCaption(BlokService):
     def __init__(self):
         super().__init__()
         self.input_schema = {
@@ -40,8 +40,8 @@ class GenerateCaption(NanoService):
         image = Image.open(io.BytesIO(image_data)).convert("RGB")
         return image
 
-    async def handle(self, ctx: Context, inputs: Dict[str, Any]) -> NanoServiceResponse:
-        response = NanoServiceResponse()
+    async def handle(self, ctx: Context, inputs: Dict[str, Any]) -> BlokResponse:
+        response = BlokResponse()
 
         try:
             base64_image = inputs.get("image_base64")
@@ -68,7 +68,3 @@ class GenerateCaption(NanoService):
             response.setError(err)
 
         return response
-# This code is a NanoService that generates captions for images using the BLIP model.
-# It takes a base64 encoded image as input and returns a description of the image.
-# The service handles errors and returns a structured response.
-# The BLIP model is loaded using the Hugging Face Transformers library, and the image is processed using PIL.

@@ -29,24 +29,24 @@ const package_dev_dependencies = {
 };
 
 const python3_file = `
-from core.nanoservice import NanoService
+from core.blok_service import BlokService
 from core.types.context import Context
-from core.types.nanoservice_response import NanoServiceResponse
+from core.types.blok_response import BlokResponse
 from core.types.global_error import GlobalError
 from typing import Any, Dict
 import traceback
 
-class Node(NanoService):
+class Node(BlokService):
     def __init__(self):
-        NanoService.__init__(self)
+        BlokService.__init__(self)
         self.input_schema = {}
         self.output_schema = {}
 
-    async def handle(self, ctx: Context, inputs: Dict[str, Any]) -> NanoServiceResponse:
-        response = NanoServiceResponse()
+    async def handle(self, ctx: Context, inputs: Dict[str, Any]) -> BlokResponse:
+        response = BlokResponse()
 
         try:
-            response.setSuccess({ "message": "Hello World from Python3!" })
+            response.set_success({ "message": "Hello World from Python3!" })
         except Exception as error:
             err = GlobalError(error)
             err.setCode(500)
@@ -55,7 +55,7 @@ class Node(NanoService):
             stack_trace = traceback.format_exc()
             err.setStack(stack_trace)
             response.success = False
-            response.setError(err)
+            response.set_error(err)
 
         return response
 `;

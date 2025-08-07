@@ -1,12 +1,12 @@
-from core.nanoservice import NanoService
+from core.blok_service import BlokService
 from core.types.context import Context
-from core.types.nanoservice_response import NanoServiceResponse
+from core.types.blok_response import BlokResponse
 from core.types.global_error import GlobalError
 from typing import Any, Dict
 import traceback
 from pymilvus import connections, Collection  # type: ignore
 
-class SearchInMilvus(NanoService):
+class SearchInMilvus(BlokService):
     def __init__(self):
         super().__init__()
         self.input_schema = {
@@ -26,8 +26,8 @@ class SearchInMilvus(NanoService):
         self.collection = Collection("multimodal_index")
         self.collection.load()
 
-    async def handle(self, ctx: Context, inputs: Dict[str, Any]) -> NanoServiceResponse:
-        response = NanoServiceResponse()
+    async def handle(self, ctx: Context, inputs: Dict[str, Any]) -> BlokResponse:
+        response = BlokResponse()
 
         try:
             text_vector = inputs.get("text_vector")

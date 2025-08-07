@@ -24,21 +24,21 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\nnode.proto\x12\x17nanoservice.workflow.v1\"L\n\x0bNodeRequest\x12\x0c\n\x04Name\x18\x01 \x01(\t\x12\x0f\n\x07Message\x18\x02 \x01(\t\x12\x10\n\x08\x45ncoding\x18\x03 \x01(\t\x12\x0c\n\x04Type\x18\x04 \x01(\t\"?\n\x0cNodeResponse\x12\x0f\n\x07Message\x18\x01 \x01(\t\x12\x10\n\x08\x45ncoding\x18\x02 \x01(\t\x12\x0c\n\x04Type\x18\x03 \x01(\t*)\n\x0fMessageEncoding\x12\n\n\x06\x42\x41SE64\x10\x00\x12\n\n\x06STRING\x10\x01*@\n\x0bMessageType\x12\x08\n\x04TEXT\x10\x00\x12\x08\n\x04JSON\x10\x01\x12\x07\n\x03XML\x10\x02\x12\x08\n\x04HTML\x10\x03\x12\n\n\x06\x42INARY\x10\x04\x32k\n\x0bNodeService\x12\\\n\x0b\x45xecuteNode\x12$.nanoservice.workflow.v1.NodeRequest\x1a%.nanoservice.workflow.v1.NodeResponse\"\x00\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\nnode.proto\x12\x10\x62lok.workflow.v1\"L\n\x0bNodeRequest\x12\x0c\n\x04Name\x18\x01 \x01(\t\x12\x0f\n\x07Message\x18\x02 \x01(\t\x12\x10\n\x08\x45ncoding\x18\x03 \x01(\t\x12\x0c\n\x04Type\x18\x04 \x01(\t\"?\n\x0cNodeResponse\x12\x0f\n\x07Message\x18\x01 \x01(\t\x12\x10\n\x08\x45ncoding\x18\x02 \x01(\t\x12\x0c\n\x04Type\x18\x03 \x01(\t*)\n\x0fMessageEncoding\x12\n\n\x06\x42\x41SE64\x10\x00\x12\n\n\x06STRING\x10\x01*@\n\x0bMessageType\x12\x08\n\x04TEXT\x10\x00\x12\x08\n\x04JSON\x10\x01\x12\x07\n\x03XML\x10\x02\x12\x08\n\x04HTML\x10\x03\x12\n\n\x06\x42INARY\x10\x04\x32]\n\x0bNodeService\x12N\n\x0b\x45xecuteNode\x12\x1d.blok.workflow.v1.NodeRequest\x1a\x1e.blok.workflow.v1.NodeResponse\"\x00\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'node_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
-  _globals['_MESSAGEENCODING']._serialized_start=182
-  _globals['_MESSAGEENCODING']._serialized_end=223
-  _globals['_MESSAGETYPE']._serialized_start=225
-  _globals['_MESSAGETYPE']._serialized_end=289
-  _globals['_NODEREQUEST']._serialized_start=39
-  _globals['_NODEREQUEST']._serialized_end=115
-  _globals['_NODERESPONSE']._serialized_start=117
-  _globals['_NODERESPONSE']._serialized_end=180
-  _globals['_NODESERVICE']._serialized_start=291
-  _globals['_NODESERVICE']._serialized_end=398
+  _globals['_MESSAGEENCODING']._serialized_start=175
+  _globals['_MESSAGEENCODING']._serialized_end=216
+  _globals['_MESSAGETYPE']._serialized_start=218
+  _globals['_MESSAGETYPE']._serialized_end=282
+  _globals['_NODEREQUEST']._serialized_start=32
+  _globals['_NODEREQUEST']._serialized_end=108
+  _globals['_NODERESPONSE']._serialized_start=110
+  _globals['_NODERESPONSE']._serialized_end=173
+  _globals['_NODESERVICE']._serialized_start=284
+  _globals['_NODESERVICE']._serialized_end=377
 # @@protoc_insertion_point(module_scope)

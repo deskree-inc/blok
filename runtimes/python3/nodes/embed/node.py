@@ -1,6 +1,6 @@
-from core.nanoservice import NanoService
+from core.blok_service import BlokService
 from core.types.context import Context
-from core.types.nanoservice_response import NanoServiceResponse
+from core.types.blok_response import BlokResponse
 from core.types.global_error import GlobalError
 from typing import Any, Dict
 import traceback
@@ -11,7 +11,7 @@ from PIL import Image # type: ignore
 import base64
 import io
 
-class EmbeddingClip(NanoService):
+class EmbeddingClip(BlokService):
     def __init__(self):
         super().__init__()
         self.input_schema = {
@@ -44,8 +44,8 @@ class EmbeddingClip(NanoService):
         with torch.no_grad():
             return self.model.encode_image(tensor_image).squeeze().cpu().tolist()
 
-    async def handle(self, ctx: Context, inputs: Dict[str, Any]) -> NanoServiceResponse:
-        response = NanoServiceResponse()
+    async def handle(self, ctx: Context, inputs: Dict[str, Any]) -> BlokResponse:
+        response = BlokResponse()
 
         try:
             description = inputs.get("description", "")

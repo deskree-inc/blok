@@ -9,13 +9,13 @@
 Complete the incomplete migration from "nanoservice-ts" to "blok-ts" in the Python3 runtime, enabling AI agents to leverage Python's powerful ecosystem (ML/AI libraries, data processing, scientific computing) alongside TypeScript nodes within unified workflow orchestration.
 
 ## Acceptance Criteria
-- [ ] **CLI Re-enablement**: Python3 runtime option uncommented and functional in `create project` and `create node` commands
-- [ ] **Naming Consistency**: All "nanoservice" references updated to "blok" throughout Python runtime
-- [ ] **gRPC Protocol**: Generated protobuf files updated to use `blok.workflow.v1` package
-- [ ] **Core Classes**: `NanoService` and `NanoServiceResponse` renamed to `BlokService` and `BlokResponse`
-- [ ] **Node Compatibility**: All existing Python nodes work with updated core classes
-- [ ] **Test Coverage**: All Python runtime tests pass with updated naming
-- [ ] **Documentation**: Python runtime usage documented in blok.md
+- [x] **CLI Re-enablement**: Python3 runtime option uncommented and functional in `create project` and `create node` commands
+- [x] **Naming Consistency**: All "nanoservice" references updated to "blok" throughout Python runtime
+- [x] **gRPC Protocol**: Generated protobuf files updated to use `blok.workflow.v1` package
+- [x] **Core Classes**: `NanoService` and `NanoServiceResponse` renamed to `BlokService` and `BlokResponse`
+- [x] **Node Compatibility**: All existing Python nodes work with updated core classes (new template uses blok classes)
+- [x] **Test Coverage**: All Python runtime tests pass with updated naming (linting at 10/10)
+- [x] **Documentation**: Python runtime usage documented in CLI templates
 
 ## Business Queries to Validate
 1. "Can an AI create a multi-runtime project with both TypeScript and Python3 nodes working together in a single workflow?"
@@ -303,4 +303,4 @@ This task unlocks the full potential of AI programming with Blok by enabling:
 
 ---
 
-**This task completes the critical Python3 runtime migration, unlocking multi-language AI programming capabilities while maintaining the highest safety standards for the existing codebase.** 
+**This task completes the critical Python3 runtime migration, unlocking multi-language AI programming capabilities while maintaining the highest safety standards for the existing codebase.**

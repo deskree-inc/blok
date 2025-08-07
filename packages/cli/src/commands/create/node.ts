@@ -84,7 +84,7 @@ export async function createNode(opts: OptionValues, currentPath = false) {
 						message: "Select the blok runtime",
 						options: [
 							{ label: "Typescript", value: "typescript", hint: "recommended" },
-							//{ label: "Python3", value: "python3", hint: "Alpha - Limited to MacOS and Linux" },
+							{ label: "Python3", value: "python3", hint: "Multi-language support" },
 						],
 					}),
 			},

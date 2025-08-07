@@ -119,7 +119,7 @@ export async function createProject(opts: OptionValues, version: string, current
 						message: "Select the runtimes to install",
 						options: [
 							{ label: "NodeJS", value: "node", hint: "recommended" },
-							//{ label: "Python3", value: "python3" },
+							{ label: "Python3", value: "python3" },
 						],
 						initialValues: ["node"],
 					}),

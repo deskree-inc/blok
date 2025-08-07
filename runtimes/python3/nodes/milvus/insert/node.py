@@ -1,6 +1,6 @@
-from core.nanoservice import NanoService
+from core.blok_service import BlokService
 from core.types.context import Context
-from core.types.nanoservice_response import NanoServiceResponse
+from core.types.blok_response import BlokResponse
 from core.types.global_error import GlobalError
 from typing import Any, Dict
 import traceback
@@ -8,7 +8,7 @@ import traceback
 from pymilvus import connections, Collection, FieldSchema, CollectionSchema, DataType # type: ignore
 from pymilvus import list_collections # type: ignore
 
-class StoreInMilvus(NanoService):
+class StoreInMilvus(BlokService):
     def __init__(self):
         super().__init__()
         self.input_schema = {
@@ -46,8 +46,8 @@ class StoreInMilvus(NanoService):
         collection.create_index(field_name="image_vector", index_params={"metric_type": "COSINE", "index_type": "IVF_FLAT", "params": {"nlist": 1024}})
         collection.load()
 
-    async def handle(self, ctx: Context, inputs: Dict[str, Any]) -> NanoServiceResponse:
-        response = NanoServiceResponse()
+    async def handle(self, ctx: Context, inputs: Dict[str, Any]) -> BlokResponse:
+        response = BlokResponse()
 
         try:
             description = inputs["description"]

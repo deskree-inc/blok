@@ -1,14 +1,14 @@
-from core.nanoservice import NanoService
+from core.blok_service import BlokService
 from core.types.context import Context
-from core.types.nanoservice_response import NanoServiceResponse
+from core.types.blok_response import BlokResponse
 from core.types.global_error import GlobalError
 from typing import Any, Dict
 import aiohttp # type: ignore
 import traceback
 
-class ApiCall(NanoService):
+class ApiCall(BlokService):
     def __init__(self):
-        NanoService.__init__(self)
+        BlokService.__init__(self)
         self.input_schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "title": "Generated schema for Root",
@@ -36,9 +36,9 @@ class ApiCall(NanoService):
         }
         self.output_schema = {}
 
-    async def handle(self, ctx: Context, inputs: Dict[str, Any]) -> NanoServiceResponse:
+    async def handle(self, ctx: Context, inputs: Dict[str, Any]) -> BlokResponse:
 
-        response = NanoServiceResponse()
+        response = BlokResponse()
 
         try:
             method = inputs.get('method', 'GET')

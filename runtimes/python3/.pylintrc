@@ -1,0 +1,18 @@
+[MASTER]
+init-hook='import sys; sys.path.append(".")'
+
+[MESSAGES CONTROL]
+disable=import-error
+
+[FORMAT]
+max-line-length=100
+
+[BASIC]
+good-names=i,j,k,ex,Run,_,id,ctx
+
+[DESIGN]
+max-args=7
+max-locals=15
+max-returns=6
+max-branches=12
+max-statements=50
