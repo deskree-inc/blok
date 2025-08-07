@@ -7,7 +7,15 @@
 	},
 	"files": {
 		"ignoreUnknown": false,
-		"ignore": ["node_modules", "dist"]
+		"ignore": [
+			"node_modules",
+			"dist",
+			"**/dist/**",
+			"**/dist-*/**",
+			"sdk/typescript/*/dist/**",
+			"sdk/typescript/*/dist-*/**",
+			"runtimes/python3/python3_runtime/**"
+		]
 	},
 	"formatter": {
 		"enabled": true,

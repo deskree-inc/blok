@@ -1,7 +1,7 @@
 
-# NanoSDK – Vanilla JavaScript SDK for Atomic Computing (CDN)
+# BlokSDK – Vanilla JavaScript SDK for Blok Framework (CDN)
 
-**NanoSDK** is the official lightweight client to execute remote nanoservice nodes on the [Atomic Computing](https://deskree.com) platform.  
+**BlokSDK** is the official lightweight client to execute remote Blok nodes and workflows.  
 This SDK is designed specifically for **browser environments** and distributed via **CDN** for easy integration without build tools or dependencies.
 
 ---
@@ -69,8 +69,8 @@ client.nodejs(nodeName, inputs)
 
 | Parameter     | Type      | Description                                                                 |
 |---------------|-----------|-----------------------------------------------------------------------------|
-| `nodeName`    | `string`  | The name of the node to execute. This name must match a registered nanoservice. |
-| `inputs`      | `object`  | A plain object representing the inputs the nanoservice expects at runtime.     |
+| `nodeName`    | `string`  | The name of the node to execute. This name must match a registered Blok node. |
+| `inputs`      | `object`  | A plain object representing the inputs the Blok node expects at runtime.     |
 
 ---
 
@@ -129,9 +129,9 @@ Console will log:
 
 ## 🔐 Requirements
 
-- A valid **Atomic Application URL**
-- A valid **Access Token** (generated via the Deskree platform)
-- Public nanoservice endpoints accessible via Atomic workflows
+- A valid **Blok Application URL**
+- A valid **Access Token** (if required by your Blok deployment)
+- Public Blok node endpoints accessible via workflows
 
 ---
 
@@ -144,8 +144,8 @@ Console will log:
 
 ## 🛡 Licensing & Security
 
-This version of NanoSDK is distributed under an open-source license but is limited in scope to avoid exposing internal infrastructure features. For enterprise-grade use, please contact Deskree.
+This version of BlokSDK is distributed under an open-source license as part of the Blok Framework ecosystem.
 
 ---
 
-## 🧑‍💻 Maintained by [Deskree Inc.](https://deskree.com)
+## 🧑‍💻 Part of [Blok Framework](https://github.com/deskree-inc/blok)

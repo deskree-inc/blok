@@ -24,7 +24,7 @@ class BlokSDKClient {
 		this.version = "1.0.0";
 		this.defaultHeaders = {
 			Authorization: `Bearer ${this.token}`,
-			"x-nanoservice-execute-node": "true",
+			"x-blok-execute-node": "true",
 			"Content-Type": "application/json",
 		};
 		this.customHeaders = {};

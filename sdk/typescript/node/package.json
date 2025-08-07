@@ -1,0 +1,43 @@
+{
+	"name": "@blok-ts/sdk-node",
+	"version": "0.1.0",
+	"description": "Official TypeScript SDK for Blok Framework - Node.js/Bun/Deno runtime",
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"module": "dist/index.mjs",
+	"exports": {
+		".": {
+			"import": "./dist/index.mjs",
+			"require": "./dist/index.js",
+			"types": "./dist/index.d.ts"
+		}
+	},
+	"files": ["dist/"],
+	"scripts": {
+		"build": "tsc && tsc -p tsconfig.esm.json",
+		"test": "vitest",
+		"test:coverage": "vitest --coverage",
+		"dev": "tsc --watch",
+		"prepublishOnly": "npm run build"
+	},
+	"keywords": ["blok", "workflow", "backend", "sdk", "typescript", "nodejs"],
+	"author": "Blok Framework",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/deskree-inc/blok.git",
+		"directory": "sdk/typescript/node"
+	},
+	"dependencies": {
+		"node-fetch": "^3.3.2"
+	},
+	"devDependencies": {
+		"@types/node": "^20.0.0",
+		"typescript": "^5.0.0",
+		"vitest": "^1.0.0",
+		"@vitest/coverage-v8": "^1.0.0"
+	},
+	"engines": {
+		"node": ">=16.0.0"
+	}
+}
