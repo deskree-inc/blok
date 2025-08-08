@@ -299,106 +299,6 @@ importers:
         specifier: ^3.1.4
         version: 3.1.4(@types/node@22.15.21)(yaml@2.7.0)
 
-  packages/cli/projects/demo:
-    dependencies:
-      '@ai-sdk/openai':
-        specifier: ^1.2.0
-        version: 1.3.22(zod@3.24.2)
-      '@blok-ts/api-call':
-        specifier: workspace:*
-        version: link:../../../../nodes/web/api-call@1.0.0
-      '@blok-ts/if-else':
-        specifier: workspace:*
-        version: link:../../../../nodes/control-flow/if-else@1.0.0
-      '@blok-ts/runner':
-        specifier: workspace:*
-        version: link:../../../../core/runner
-      '@modelcontextprotocol/sdk':
-        specifier: ^1.12.1
-        version: 1.12.1
-      '@opentelemetry/api':
-        specifier: ^1.9.0
-        version: 1.9.0
-      '@opentelemetry/exporter-prometheus':
-        specifier: ^0.57.2
-        version: 0.57.2(@opentelemetry/api@1.9.0)
-      '@opentelemetry/resources':
-        specifier: ^1.30.1
-        version: 1.30.1(@opentelemetry/api@1.9.0)
-      '@opentelemetry/sdk-metrics':
-        specifier: ^1.30.1
-        version: 1.30.1(@opentelemetry/api@1.9.0)
-      '@opentelemetry/sdk-trace-base':
-        specifier: ^1.30.1
-        version: 1.30.1(@opentelemetry/api@1.9.0)
-      '@opentelemetry/sdk-trace-web':
-        specifier: ^1.30.1
-        version: 1.30.1(@opentelemetry/api@1.9.0)
-      '@opentelemetry/semantic-conventions':
-        specifier: ^1.30.0
-        version: 1.30.0
-      ai:
-        specifier: ^4.1.50
-        version: 4.3.16(react@18.3.1)(zod@3.24.2)
-      body-parser:
-        specifier: 1.20.3
-        version: 1.20.3
-      cors:
-        specifier: 2.8.5
-        version: 2.8.5
-      ejs:
-        specifier: ^3.1.10
-        version: 3.1.10
-      express:
-        specifier: 4.21.2
-        version: 4.21.2
-      mongodb:
-        specifier: ^6.14.2
-        version: 6.17.0
-      pg:
-        specifier: ^8.13.3
-        version: 8.16.0
-      uuid:
-        specifier: ^11.1.0
-        version: 11.1.0
-      zod:
-        specifier: ^3.24.2
-        version: 3.24.2
-    devDependencies:
-      '@types/body-parser':
-        specifier: ^1.19.5
-        version: 1.19.5
-      '@types/cors':
-        specifier: ^2.8.17
-        version: 2.8.17
-      '@types/ejs':
-        specifier: ^3.1.5
-        version: 3.1.5
-      '@types/express':
-        specifier: ^5.0.0
-        version: 5.0.1
-      '@types/node':
-        specifier: ^22.13.4
-        version: 22.15.21
-      '@types/pg':
-        specifier: ^8.11.11
-        version: 8.15.4
-      copyfiles:
-        specifier: ^2.4.1
-        version: 2.4.1
-      nodemon:
-        specifier: ^3.1.9
-        version: 3.1.9
-      rimraf:
-        specifier: ^6.0.1
-        version: 6.0.1
-      ts-node:
-        specifier: ^10.9.2
-        version: 10.9.2(@types/node@22.15.21)(typescript@5.8.3)
-      typescript:
-        specifier: ^5.8.2
-        version: 5.8.3
-
   templates/node:
     dependencies:
       '@blok-ts/runner':
@@ -567,6 +467,9 @@ importers:
       '@blok-ts/runner':
         specifier: workspace:*
         version: link:../../core/runner
+      '@hono/node-server':
+        specifier: ^1.14.2
+        version: 1.18.1(hono@4.8.12)
       '@modelcontextprotocol/sdk':
         specifier: ^1.12.1
         version: 1.12.1
@@ -606,6 +509,9 @@ importers:
       express:
         specifier: 4.21.2
         version: 4.21.2
+      hono:
+        specifier: ^4.7.7
+        version: 4.8.12
       mongodb:
         specifier: ^6.14.2
         version: 6.17.0
@@ -1690,6 +1596,12 @@ packages:
     resolution: {integrity: sha512-AiXO/bfe9bmxBjxxtYxFAXGZvMaN5s8kO+jBHAJCON8rJoB5YS/D6X7ZNc6XQkuHNmyl4CYaMI1fJ/Gn27RGGw==}
     engines: {node: '>=6'}
     hasBin: true
+
+  '@hono/node-server@1.18.1':
+    resolution: {integrity: sha512-O3puG/b7owYYmoQ2XPBf3SxBz6Dhk5VmWFhbaBU8/5wcUaXUPS0goxaI2Zfyg+Cu14ILJHEU7IFRw7miFxuXxg==}
+    engines: {node: '>=18.14.1'}
+    peerDependencies:
+      hono: ^4
 
   '@isaacs/cliui@8.0.2':
     resolution: {integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==}
@@ -3148,6 +3060,10 @@ packages:
   hasown@2.0.2:
     resolution: {integrity: sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ==}
     engines: {node: '>= 0.4'}
+
+  hono@4.8.12:
+    resolution: {integrity: sha512-MQSKk1Mg7b74k8l+A025LfysnLtXDKkE4pLaSsYRQC5iy85lgZnuyeQ1Wynair9mmECzoLu+FtJtqNZSoogBDQ==}
+    engines: {node: '>=16.9.0'}
 
   http-errors@2.0.0:
     resolution: {integrity: sha512-FtwrG/euBzaEjYeRqOgly7G0qviiXoJWnvEH2Z1plBdXgbyjv34pHTSb9zoeHMyDy33+DWy5Wt9Wo+TURtOYSQ==}
@@ -6045,6 +5961,10 @@ snapshots:
       protobufjs: 7.4.0
       yargs: 17.7.2
 
+  '@hono/node-server@1.18.1(hono@4.8.12)':
+    dependencies:
+      hono: 4.8.12
+
   '@isaacs/cliui@8.0.2':
     dependencies:
       string-width: 5.1.2
@@ -7669,6 +7589,8 @@ snapshots:
   hasown@2.0.2:
     dependencies:
       function-bind: 1.1.2
+
+  hono@4.8.12: {}
 
   http-errors@2.0.0:
     dependencies:
