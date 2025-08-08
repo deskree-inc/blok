@@ -36,6 +36,36 @@ export default class HttpTrigger extends TriggerBase {
 		this.initializer = this.startCounter();
 		this.loadNodes();
 		this.loadWorkflows();
+		this.setupRoutes();
+	}
+
+	private setupRoutes() {
+		this.app.use(express.static("public"));
+		this.app.use(bodyParser.text({ limit: "150mb" }));
+		this.app.use(bodyParser.urlencoded({ extended: true }));
+		this.app.use(bodyParser.json({ limit: "150mb" }));
+		this.app.use(cors());
+
+		this.app.use("/health-check", (req: Request, res: Response) => {
+			res.status(200).send("Online and ready for action 💪");
+		});
+
+		this.app.get("/metrics", (req: Request, res: Response) => {
+			try {
+				metricsHandler(req, res);
+			} catch (error) {
+				res.status(500).send("Error serving metrics");
+			}
+		});
+
+		// MCP Metadata endpoint for tool discovery
+		this.app.get("/mcp/metadata", this.handleMcpMetadata.bind(this));
+
+		/*
+		 * You can add your own middleware or routes with custom ExpressJS logic
+		 * to extend this project.
+		 */
+		this.app.use("/", apps);
 	}
 
 	loadNodes() {
@@ -50,36 +80,46 @@ export default class HttpTrigger extends TriggerBase {
 		this.nodeMap.workflows = workflows;
 	}
 
+	private getAvailableNodes() {
+		const nodeKeys = Object.keys(nodes);
+		return nodeKeys.map((key) => ({
+			name: key,
+			description: `Execute ${key} node`,
+			inputs: {},
+			runtime: "local",
+			businessValue: "Automated node processing",
+			category: "node",
+		}));
+	}
+
+	private handleMcpMetadata(req: Request, res: Response): void {
+		try {
+			const workflows = Object.keys(this.nodeMap.workflows).map((name) => ({
+				name,
+				description: `Execute ${name} workflow`,
+				inputs: {},
+				businessValue: "Automated workflow processing",
+				category: "workflow",
+			}));
+
+			const nodes = this.getAvailableNodes();
+
+			res.json({
+				workflows,
+				nodes,
+			});
+		} catch (error) {
+			this.logger.error("Failed to get MCP metadata:", String(error));
+			res.status(500).json({ error: "Failed to retrieve metadata" });
+		}
+	}
+
 	getApp(): Express {
 		return this.app;
 	}
 
 	listen(): Promise<number> {
 		return new Promise((done) => {
-			this.app.use(express.static("public"));
-			this.app.use(bodyParser.text({ limit: "150mb" }));
-			this.app.use(bodyParser.urlencoded({ extended: true }));
-			this.app.use(bodyParser.json({ limit: "150mb" }));
-			this.app.use(cors());
-
-			this.app.use("/health-check", (req: Request, res: Response) => {
-				res.status(200).send("Online and ready for action 💪");
-			});
-
-			this.app.get("/metrics", (req: Request, res: Response) => {
-				try {
-					metricsHandler(req, res);
-				} catch (error) {
-					res.status(500).send("Error serving metrics");
-				}
-			});
-
-			/*
-			 * You can add your own middleware or routes with custom ExpressJS logic
-			 * to extend this project.
-			 */
-			this.app.use("/", apps);
-
 			this.app.use(["/:workflow", "/"], async (req: Request, res: Response): Promise<void> => {
 				const id: string = (req.query?.requestId as string) || (uuid() as string);
 				req.query.requestId = undefined;

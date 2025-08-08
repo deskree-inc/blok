@@ -15,25 +15,33 @@
 		"reload": "node -r ts-node/register --env-file=.env.local ./src/index.ts",
 		"build": "rimraf ./dist && tsc && copyfiles -u 1 src/nodes/**/*.html src/nodes/**/*.md dist/",
 		"infra:dev": "rimraf ./dist && tsc && copyfiles -u 1 src/nodes/**/*.html src/nodes/**/*.md dist/ && docker compose --file ./infra/docker-compose.yml up --build --watch",
-		"infra:build": "tsc --watch -p tsconfig.json --diagnostics"
+		"infra:build": "tsc --watch -p tsconfig.json --diagnostics",
+		"test": "vitest run",
+		"test:watch": "vitest"
 	},
 	"devDependencies": {
 		"@types/body-parser": "^1.19.5",
 		"@types/cors": "^2.8.17",
+		"@types/ejs": "^3.1.5",
 		"@types/express": "^5.0.0",
 		"@types/node": "^22.13.4",
+		"@types/pg": "^8.11.11",
+		"@types/supertest": "^6.0.2",
 		"copyfiles": "^2.4.1",
 		"nodemon": "^3.1.9",
 		"rimraf": "^6.0.1",
+		"supertest": "^6.3.4",
 		"ts-node": "^10.9.2",
 		"typescript": "^5.8.2",
-		"@types/ejs": "^3.1.5",
-		"@types/pg": "^8.11.11"
+		"vitest": "^3.2.4"
 	},
 	"dependencies": {
+		"@ai-sdk/openai": "^1.2.0",
 		"@blok-ts/api-call": "workspace:*",
 		"@blok-ts/if-else": "workspace:*",
 		"@blok-ts/runner": "workspace:*",
+		"@hono/node-server": "^1.14.2",
+		"@modelcontextprotocol/sdk": "^1.12.1",
 		"@opentelemetry/api": "^1.9.0",
 		"@opentelemetry/exporter-prometheus": "^0.57.2",
 		"@opentelemetry/resources": "^1.30.1",
@@ -41,19 +49,16 @@
 		"@opentelemetry/sdk-trace-base": "^1.30.1",
 		"@opentelemetry/sdk-trace-web": "^1.30.1",
 		"@opentelemetry/semantic-conventions": "^1.30.0",
-		"@modelcontextprotocol/sdk": "^1.12.1",
-		"hono": "^4.7.7",
-		"@hono/node-server": "^1.14.2",
+		"ai": "^4.1.50",
 		"body-parser": "1.20.3",
 		"cors": "2.8.5",
-		"express": "4.21.2",
-		"uuid": "^11.1.0",
-		"zod": "^3.24.2",
-		"ai": "^4.1.50",
-		"@ai-sdk/openai": "^1.2.0",
 		"ejs": "^3.1.10",
+		"express": "4.21.2",
+		"hono": "^4.7.7",
+		"mongodb": "^6.14.2",
 		"pg": "^8.13.3",
-		"mongodb": "^6.14.2"
+		"uuid": "^11.1.0",
+		"zod": "^3.24.2"
 	},
 	"private": true
 }

@@ -1,14 +1,6 @@
 {
 	"watch": ["src"],
 	"ext": "ts",
-	"ignore": ["src/**/*.test.ts"],
-	"exec_simple": "node -r ts-node/register --env-file=.env.local ./src/index.ts",
-	"exec_metrics": "node -r ts-node/register -r ./src/runner/metrics/opentelemetry_metrics.ts --env-file=.env.local ./src/index.ts",
-	"exec_tracing": "node -r ts-node/register -r ./src/runner/metrics/opentelemetry_traces.ts --env-file=.env.local ./src/index.ts",
-	"exec_metrics_tracing": "node -r ts-node/register -r ./src/runner/metrics/opentelemetry_metrics.ts -r ./src/runner/metrics/opentelemetry_traces.ts --env-file=.env.local ./src/index.ts",
-	"exec": "node -r ts-node/register --env-file=.env.local ./src/index.ts",
-	"env": {
-		"NODE_ENV": "local"
-	},
-	"ignoreRoot": [".git"]
+	"ignore": ["dist", "node_modules"],
+	"exec": "ts-node --transpile-only src/index.ts"
 }

@@ -1,0 +1,23 @@
+{
+	"mcpServers": {
+		"blok-local": {
+			"command": "node",
+			"args": [
+				"/Users/marco/workspaces/research/deskree-observability/triggers/mcp/dist/index.js"
+			],
+			"env": {
+				"BLOK_HTTP_TRIGGER_URL": "http://localhost:4000"
+			}
+		},
+		"blok-enterprise": {
+			"command": "node",
+			"args": [
+				"/Users/marco/workspaces/research/deskree-observability/triggers/mcp/dist/index.js"
+			],
+			"env": {
+				"BLOK_HTTP_TRIGGER_URL": "https://my-company-blok.herokuapp.com",
+				"BLOK_AUTH_TOKEN": "your-enterprise-bearer-token-here"
+			}
+		}
+	}
+}
