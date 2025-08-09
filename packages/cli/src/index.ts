@@ -5,6 +5,8 @@ import { createNode } from "./commands/create/node.js";
 import { createProject } from "./commands/create/project.js";
 import { createWorkflow } from "./commands/create/workflow.js";
 import { devProject } from "./commands/dev/index.js";
+import { executeNode } from "./commands/execute/node.js";
+import { executeWorkflow } from "./commands/execute/workflow.js";
 import { type OptionValues, program } from "./services/commander.js";
 import { PosthogAnalytics } from "./services/posthog.js";
 import { getPackageVersion } from "./services/utils.js";
@@ -132,6 +134,59 @@ async function main() {
 		create.addCommand(workflow);
 
 		program.addCommand(create);
+
+		// Execute commands (manual trigger)
+		const execute = new Command("execute").description("Execute workflows and nodes manually");
+
+		const executeWorkflowCmd = new Command("workflow <workflowName>")
+			.description("Execute a workflow using temporal server")
+			.option("--body <json>", "Request body as JSON string")
+			.option("--query <json>", "Query parameters as JSON string")
+			.option("--headers <json>", "Request headers as JSON string")
+			.option("--params <json>", "Path parameters as JSON string")
+			.option("--json <json>", "Complete request context as JSON")
+			.option("--workflow-path <path>", "Path to workflows directory", "./workflows")
+			.option("--node-path <path>", "Path to nodes directory", "./nodes")
+			.option("--output <format>", "Output format: json|pretty|file:<path>", "pretty")
+			.option("--timeout <ms>", "Execution timeout in milliseconds", "30000")
+			.option("--debug", "Enable debug logging")
+			.action(async (workflowName: string, options: OptionValues) => {
+				await analytics.trackCommandExecution({
+					command: "execute workflow",
+					args: { workflowName, ...options },
+					execution: async () => {
+						await executeWorkflow(workflowName, options);
+					},
+				});
+			});
+
+		const executeNodeCmd = new Command("node <nodeName>")
+			.description("Execute a node using temporal server")
+			.option("--body <json>", "Request body as JSON string")
+			.option("--query <json>", "Query parameters as JSON string")
+			.option("--headers <json>", "Request headers as JSON string")
+			.option("--params <json>", "Path parameters as JSON string")
+			.option("--json <json>", "Complete request context as JSON")
+			.option("--workflow-path <path>", "Path to workflows directory", "./workflows")
+			.option("--node-path <path>", "Path to nodes directory", "./nodes")
+			.option("--output <format>", "Output format: json|pretty|file:<path>", "pretty")
+			.option("--runtime <type>", "Node runtime: module|local|runtime.python3", "module")
+			.option("--timeout <ms>", "Execution timeout in milliseconds", "30000")
+			.option("--debug", "Enable debug logging")
+			.action(async (nodeName: string, options: OptionValues) => {
+				await analytics.trackCommandExecution({
+					command: "execute node",
+					args: { nodeName, ...options },
+					execution: async () => {
+						await executeNode(nodeName, options);
+					},
+				});
+			});
+
+		execute.addCommand(executeWorkflowCmd);
+		execute.addCommand(executeNodeCmd);
+
+		program.addCommand(execute);
 
 		// Dev server
 

@@ -28,23 +28,60 @@ describe("MCP Integration Tests", () => {
 				},
 			});
 
-			// Wait for server to start
-			await new Promise((resolve) => {
-				const timeout = setTimeout(resolve, 3000); // 3 second timeout
+			let serverStarted = false;
+			let serverError: string | null = null;
+
+			// Set up process error handling
+			httpTriggerProcess.on("error", (error) => {
+				console.error("HTTP Trigger process error:", error);
+				serverError = error.message;
+			});
+
+			httpTriggerProcess.on("exit", (code, signal) => {
+				if (code !== 0 && code !== null) {
+					console.error(`HTTP Trigger process exited with code ${code}, signal ${signal}`);
+					serverError = `Process exited with code ${code}`;
+				}
+			});
+
+			// Wait for server to start with improved detection
+			await new Promise<void>((resolve, reject) => {
+				const timeout = setTimeout(() => {
+					if (!serverStarted) {
+						console.log("Timeout reached. Server output so far:");
+						reject(new Error(serverError || "HTTP Trigger failed to start within timeout"));
+					}
+				}, 15000); // Increased timeout to 15 seconds
 
 				if (httpTriggerProcess?.stdout) {
 					httpTriggerProcess.stdout.on("data", (data) => {
 						const output = data.toString();
-						if (output.includes("Server is running") || output.includes("running at")) {
+						console.log("HTTP Trigger stdout:", output.trim());
+						// Look for the exact message the HTTP Trigger sends
+						if (
+							output.includes("Server is running at http://localhost:") ||
+							output.includes("Server initialized in") ||
+							output.includes("listening on port") ||
+							output.includes("server listening")
+						) {
+							console.log("✅ Detected server start message");
+							serverStarted = true;
 							clearTimeout(timeout);
-							resolve(undefined);
+							resolve();
 						}
 					});
 				}
 
 				if (httpTriggerProcess?.stderr) {
 					httpTriggerProcess.stderr.on("data", (data) => {
-						console.error("HTTP Trigger stderr:", data.toString());
+						const error = data.toString().trim();
+						console.error("HTTP Trigger stderr:", error);
+						// Only fail on actual errors, not warnings
+						if (error.includes("Error:") && !error.includes("npm warn") && !error.includes("Unknown env config")) {
+							serverError = error;
+							clearTimeout(timeout);
+							reject(new Error(`HTTP Trigger stderr error: ${error}`));
+						}
 					});
 				}
 			});
@@ -56,9 +93,11 @@ describe("MCP Integration Tests", () => {
 		client = new BlokHttpClient("http://localhost:4001");
 		registry = new McpToolRegistry(client);
 
-		// Wait for HTTP trigger to be ready
+		// Wait for HTTP trigger to be ready with exponential backoff
 		let retries = 0;
-		while (retries < 10) {
+		let waitTime = 500; // Start with 500ms
+		while (retries < 15) {
+			// Increased retries
 			try {
 				const isHealthy = await client.healthCheck();
 				if (isHealthy) {
@@ -66,17 +105,18 @@ describe("MCP Integration Tests", () => {
 					break;
 				}
 			} catch (error) {
-				console.log(`Waiting for HTTP Trigger... (attempt ${retries + 1})`);
+				console.log(`Waiting for HTTP Trigger... (attempt ${retries + 1}/${15})`);
 			}
 
 			retries++;
-			await new Promise((resolve) => setTimeout(resolve, 1000));
+			await new Promise((resolve) => setTimeout(resolve, waitTime));
+			waitTime = Math.min(waitTime * 1.2, 2000); // Exponential backoff, max 2s
 		}
 
-		if (retries === 10) {
-			throw new Error("HTTP Trigger failed to start or become healthy");
+		if (retries === 15) {
+			throw new Error("HTTP Trigger failed to start or become healthy after 15 attempts");
 		}
-	}, 15000); // 15 second timeout for beforeAll
+	}, 25000); // Increased timeout to 25 seconds for beforeAll
 
 	afterAll(async () => {
 		if (httpTriggerProcess) {

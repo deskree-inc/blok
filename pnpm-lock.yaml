@@ -213,6 +213,9 @@ importers:
       '@ai-sdk/openai':
         specifier: ^1.3.22
         version: 1.3.22(zod@3.24.2)
+      '@blok-ts/http-middleware':
+        specifier: workspace:*
+        version: link:../http-middleware
       '@clack/prompts':
         specifier: ^0.9.1
         version: 0.9.1
@@ -234,6 +237,9 @@ importers:
       fs-extra:
         specifier: ^11.2.0
         version: 11.3.0
+      hono:
+        specifier: ^4.6.10
+        version: 4.8.12
       ink:
         specifier: ^5.2.1
         version: 5.2.1(@types/react@19.1.5)(react@18.3.1)
