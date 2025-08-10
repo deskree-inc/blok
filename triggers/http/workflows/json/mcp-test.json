@@ -1,0 +1,31 @@
+{
+	"name": "MCP Test Workflow",
+	"description": "Test workflow for MCP integration that accepts any HTTP method",
+	"version": "1.0.0",
+	"trigger": {
+		"http": {
+			"method": "*",
+			"path": "/",
+			"accept": "application/json"
+		}
+	},
+	"steps": [
+		{
+			"name": "get-countries-api",
+			"node": "@blok-ts/api-call",
+			"type": "module"
+		}
+	],
+	"nodes": {
+		"get-countries-api": {
+			"inputs": {
+				"url": "https://countriesnow.space/api/v0.1/countries/capital",
+				"method": "GET",
+				"headers": {
+					"Content-Type": "application/json"
+				},
+				"responseType": "application/json"
+			}
+		}
+	}
+}

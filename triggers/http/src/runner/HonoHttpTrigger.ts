@@ -104,6 +104,46 @@ export default class HonoHttpTrigger extends TriggerBase {
 			return c.text("Online and ready for action 💪");
 		});
 
+		// MCP metadata endpoint for discovery
+		this.app.get("/mcp/metadata", (c: HonoContext) => {
+			try {
+				// Get available workflows
+				const workflows = Object.keys(this.nodeMap.workflows).map((key) => ({
+					name: key,
+					description: `Workflow: ${key}`,
+					inputs: {},
+					businessValue: `Execute ${key} workflow with structured data processing`,
+					category: "workflow" as const,
+					method: "GET", // Default method, will be determined correctly by MCP client
+					path: "/", // Default path
+				}));
+
+				// Get available nodes
+				const nodeKeys = this.nodeMap.nodes?.getNodes() || [];
+				const nodes = Object.keys(nodeKeys).map((nodeName: string) => ({
+					name: nodeName,
+					description: `Node: ${nodeName}`,
+					inputs: {},
+					runtime: "module",
+					businessValue: `Execute ${nodeName} node for data processing`,
+					category: "node" as const,
+				}));
+
+				return c.json({
+					workflows,
+					nodes,
+				});
+			} catch (error) {
+				return c.json(
+					{
+						error: "Failed to fetch metadata",
+						message: error instanceof Error ? error.message : "Unknown error",
+					},
+					500,
+				);
+			}
+		});
+
 		// Metrics endpoint
 		this.app.get("/metrics", async (c: HonoContext) => {
 			try {
@@ -156,6 +196,7 @@ export default class HonoHttpTrigger extends TriggerBase {
 	private async handleWorkflow(c: HonoContext): Promise<Response> {
 		const id: string = c.req.query("requestId") || uuid();
 		let workflowNameInPath: string = c.req.param("workflow") || "";
+		console.log(`Handling workflow: ${workflowNameInPath} with request ID: ${id}`);
 
 		let remoteNodeExecution = false;
 		let runtimeWorkflow: RuntimeWorkflow | undefined;
@@ -229,9 +270,14 @@ export default class HonoHttpTrigger extends TriggerBase {
 				let ctx: Context = this.createContext(undefined, workflowNameInPath || c.req.param("workflow") || "", id);
 
 				// Create Express-like request object for backward compatibility
+				// BUGFIX: Extract clean path without parameters like Express does
+				// Hono route: /:workflow{.+} with request /countries should give path: /
+				const workflow = c.req.param("workflow");
+				const cleanPath = workflow ? "/" : c.req.path; // Remove parameter from path like Express
+
 				const mockReq: ExpressLikeRequest = {
 					method: c.req.method,
-					path: c.req.path,
+					path: cleanPath,
 					headers: Object.fromEntries(c.req.raw.headers.entries()),
 					body: remoteNodeExecution ? runtimeWorkflow : await this.parseBody(c),
 					params: {},
@@ -255,7 +301,16 @@ export default class HonoHttpTrigger extends TriggerBase {
 				const { method, path } = this.configuration.trigger.http;
 				if (method && method !== "*" && c.req.method.toLowerCase() !== method.toLowerCase())
 					throw new Error("Invalid HTTP method");
-				if (!validateRoute(path, c.req.path)) throw new Error("Invalid HTTP path");
+
+				console.log(
+					`🔍 HONO DEBUG - Workflow: ${workflowNameInPath}, Config method: ${method}, Config path: ${path}, Request method: ${c.req.method}, Request path: ${c.req.path}`,
+				);
+				console.log(`🔍 HONO DEBUG - Clean path for validation: ${mockReq.path}`);
+				if (!validateRoute(path, mockReq.path)) {
+					console.log(`❌ HONO DEBUG - Path validation failed: config=${path}, request=${mockReq.path}`);
+					throw new Error("Invalid HTTP path");
+				}
+				console.log(`✅ HONO DEBUG - Path validation SUCCESS: config=${path}, request=${mockReq.path}`);
 
 				ctx.request = mockReq as unknown as RequestContext;
 				const response: TriggerResponse = await this.run(ctx);

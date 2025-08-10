@@ -6,6 +6,7 @@ import type { BlokExecutionResult, BlokHttpClient, BlokMetadata } from "./client
  */
 export class McpToolRegistry {
 	private tools: Map<string, Tool> = new Map();
+	private workflowMethods: Map<string, string> = new Map(); // Store HTTP methods for workflows
 	private metadata?: BlokMetadata;
 
 	constructor(private httpClient: BlokHttpClient) {}
@@ -44,7 +45,8 @@ export class McpToolRegistry {
 		// Determine if this is a workflow or node based on name prefix
 		if (name.startsWith("workflow_")) {
 			const workflowName = name.replace("workflow_", "");
-			return await this.httpClient.executeWorkflow(workflowName, args);
+			const method = this.workflowMethods.get(workflowName) || "POST";
+			return await this.httpClient.executeWorkflowWithMethod(workflowName, args, method);
 		}
 		if (name.startsWith("node_")) {
 			const nodeName = name.replace("node_", "");
@@ -62,9 +64,12 @@ export class McpToolRegistry {
 		// Convert workflows to MCP tools
 		for (const workflow of this.metadata.workflows) {
 			const toolName = `workflow_${workflow.name}`;
+			// Store the HTTP method for this workflow
+			this.workflowMethods.set(workflow.name, workflow.method);
+
 			const tool: Tool = {
 				name: toolName,
-				description: `${workflow.description}\n\nBusiness Value: ${workflow.businessValue}`,
+				description: `${workflow.description}\n\nBusiness Value: ${workflow.businessValue}\n\nHTTP Method: ${workflow.method}`,
 				inputSchema: {
 					type: "object",
 					properties: this.convertInputsToSchema(workflow.inputs),

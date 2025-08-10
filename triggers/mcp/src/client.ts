@@ -8,6 +8,8 @@ export interface BlokMetadata {
 		inputs: Record<string, unknown>;
 		businessValue: string;
 		category: "workflow";
+		method: string;
+		path: string;
 	}>;
 	nodes: Array<{
 		name: string;
@@ -76,13 +78,38 @@ export class BlokHttpClient {
 	 * Execute a workflow via HTTP Trigger
 	 */
 	async executeWorkflow(workflowName: string, inputs: Record<string, unknown>): Promise<BlokExecutionResult> {
+		return this.executeWorkflowWithMethod(workflowName, inputs, "POST");
+	}
+
+	/**
+	 * Execute a workflow via HTTP Trigger with specific HTTP method
+	 */
+	async executeWorkflowWithMethod(
+		workflowName: string,
+		inputs: Record<string, unknown>,
+		method: string,
+	): Promise<BlokExecutionResult> {
 		try {
 			const startTime = Date.now();
 
-			const response = await fetch(`${this.baseUrl}/${workflowName}`, {
-				method: "POST",
+			// For GET requests, convert inputs to query parameters
+			let url = `${this.baseUrl}/${workflowName}`;
+			let body: string | undefined;
+
+			if (method.toUpperCase() === "GET" && Object.keys(inputs).length > 0) {
+				const queryParams = new URLSearchParams();
+				for (const [key, value] of Object.entries(inputs)) {
+					queryParams.append(key, String(value));
+				}
+				url += `?${queryParams.toString()}`;
+			} else if (method.toUpperCase() !== "GET") {
+				body = JSON.stringify(inputs);
+			}
+
+			const response = await fetch(url, {
+				method: method.toUpperCase(),
 				headers: this.createHeaders(),
-				body: JSON.stringify(inputs),
+				body: body,
 			});
 
 			const duration = Date.now() - startTime;
