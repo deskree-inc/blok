@@ -15,6 +15,12 @@ import { cors } from "hono/cors";
 import { v4 as uuid } from "uuid";
 import nodes from "../Nodes";
 import workflows from "../Workflows";
+import { mcpAdminMiddleware } from "../middleware/mcp-admin";
+import { docsRoutes } from "../routes/mcp/docs";
+import { mcpEditRoutes } from "../routes/mcp/edit";
+import { guidanceRoutes } from "../routes/mcp/guidance";
+import { nodeRoutes } from "../routes/mcp/nodes";
+import { workflowRoutes } from "../routes/mcp/workflows";
 import MessageDecode from "./MessageDecode";
 import { handleDynamicRoute, validateRoute } from "./Util";
 import { metricsHandler } from "./metrics/opentelemetry_metrics";
@@ -181,6 +187,14 @@ export default class HonoHttpTrigger extends TriggerBase {
 				});
 			}
 		});
+
+		// MCP Admin Routes - Mount with security middleware
+		this.app.use("/mcp/*", mcpAdminMiddleware);
+		this.app.route("/mcp", guidanceRoutes);
+		this.app.route("/mcp", workflowRoutes);
+		this.app.route("/mcp", docsRoutes);
+		this.app.route("/mcp", nodeRoutes);
+		this.app.route("/mcp", mcpEditRoutes);
 
 		// Mount Express apps (for backward compatibility with custom routes)
 		// Convert Express routes to Hono routes

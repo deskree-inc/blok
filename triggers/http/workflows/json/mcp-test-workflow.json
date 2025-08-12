@@ -1,0 +1,24 @@
+{
+	"name": "mcp-test-workflow",
+	"description": "Test workflow created via MCP",
+	"version": "1.0.0",
+	"trigger": {
+		"http": {
+			"method": "POST",
+			"path": "/mcp-test"
+		}
+	},
+	"steps": [
+		{
+			"name": "step1",
+			"node": "api-call",
+			"type": "module"
+		}
+	],
+	"nodes": {},
+	"metadata": {
+		"created": "2025-08-11T22:34:54.071Z",
+		"createdBy": "AI Agent via MCP",
+		"lastModified": "2025-08-11T22:34:54.071Z"
+	}
+}

@@ -219,6 +219,509 @@ export class BlokHttpClient {
 	}
 
 	/**
+	 * AI Agent Guidance - Get framework overview and learning path
+	 */
+	async getAiGuidance(): Promise<BlokExecutionResult> {
+		try {
+			const startTime = Date.now();
+			const response = await fetch(`${this.baseUrl}/mcp/guidance/start`, {
+				method: "GET",
+				headers: this.createHeaders(),
+			});
+
+			const duration = Date.now() - startTime;
+			const timestamp = new Date().toISOString();
+
+			if (!response.ok) {
+				const errorData = await response.text();
+				return {
+					success: false,
+					error: `HTTP ${response.status}: ${errorData}`,
+					metadata: { duration, timestamp },
+				};
+			}
+
+			const data = await response.json();
+			return {
+				success: true,
+				data,
+				metadata: { duration, timestamp },
+			};
+		} catch (error) {
+			return {
+				success: false,
+				error: error instanceof Error ? error.message : "Unknown error",
+				metadata: { duration: 0, timestamp: new Date().toISOString() },
+			};
+		}
+	}
+
+	/**
+	 * Validate workflow structure
+	 */
+	async validateWorkflow(workflowData: Record<string, unknown>): Promise<BlokExecutionResult> {
+		try {
+			const startTime = Date.now();
+			const response = await fetch(`${this.baseUrl}/mcp/workflows/validate`, {
+				method: "POST",
+				headers: this.createHeaders(),
+				body: JSON.stringify(workflowData),
+			});
+
+			const duration = Date.now() - startTime;
+			const timestamp = new Date().toISOString();
+
+			if (!response.ok) {
+				const errorData = await response.text();
+				return {
+					success: false,
+					error: `HTTP ${response.status}: ${errorData}`,
+					metadata: { duration, timestamp },
+				};
+			}
+
+			const data = await response.json();
+			return {
+				success: true,
+				data,
+				metadata: { duration, timestamp },
+			};
+		} catch (error) {
+			return {
+				success: false,
+				error: error instanceof Error ? error.message : "Unknown error",
+				metadata: { duration: 0, timestamp: new Date().toISOString() },
+			};
+		}
+	}
+
+	/**
+	 * Search documentation
+	 */
+	async searchDocs(query: string, maxResults?: number): Promise<BlokExecutionResult> {
+		try {
+			const startTime = Date.now();
+			const response = await fetch(`${this.baseUrl}/mcp/docs/search`, {
+				method: "POST",
+				headers: this.createHeaders(),
+				body: JSON.stringify({ query, maxResults }),
+			});
+
+			const duration = Date.now() - startTime;
+			const timestamp = new Date().toISOString();
+
+			if (!response.ok) {
+				const errorData = await response.text();
+				return {
+					success: false,
+					error: `HTTP ${response.status}: ${errorData}`,
+					metadata: { duration, timestamp },
+				};
+			}
+
+			const data = await response.json();
+			return {
+				success: true,
+				data,
+				metadata: { duration, timestamp },
+			};
+		} catch (error) {
+			return {
+				success: false,
+				error: error instanceof Error ? error.message : "Unknown error",
+				metadata: { duration: 0, timestamp: new Date().toISOString() },
+			};
+		}
+	}
+
+	/**
+	 * Get framework overview
+	 */
+	async getFrameworkInfo(): Promise<BlokExecutionResult> {
+		try {
+			const startTime = Date.now();
+			const response = await fetch(`${this.baseUrl}/mcp/docs/blok`, {
+				method: "GET",
+				headers: this.createHeaders(),
+			});
+
+			const duration = Date.now() - startTime;
+			const timestamp = new Date().toISOString();
+
+			if (!response.ok) {
+				const errorData = await response.text();
+				return {
+					success: false,
+					error: `HTTP ${response.status}: ${errorData}`,
+					metadata: { duration, timestamp },
+				};
+			}
+
+			const data = await response.json();
+			return {
+				success: true,
+				data,
+				metadata: { duration, timestamp },
+			};
+		} catch (error) {
+			return {
+				success: false,
+				error: error instanceof Error ? error.message : "Unknown error",
+				metadata: { duration: 0, timestamp: new Date().toISOString() },
+			};
+		}
+	}
+
+	/**
+	 * Discover available nodes
+	 */
+	async discoverNodes(): Promise<BlokExecutionResult> {
+		try {
+			const startTime = Date.now();
+			const response = await fetch(`${this.baseUrl}/mcp/nodes`, {
+				method: "GET",
+				headers: this.createHeaders(),
+			});
+
+			const duration = Date.now() - startTime;
+			const timestamp = new Date().toISOString();
+
+			if (!response.ok) {
+				const errorData = await response.text();
+				return {
+					success: false,
+					error: `HTTP ${response.status}: ${errorData}`,
+					metadata: { duration, timestamp },
+				};
+			}
+
+			const data = await response.json();
+			return {
+				success: true,
+				data,
+				metadata: { duration, timestamp },
+			};
+		} catch (error) {
+			return {
+				success: false,
+				error: error instanceof Error ? error.message : "Unknown error",
+				metadata: { duration: 0, timestamp: new Date().toISOString() },
+			};
+		}
+	}
+
+	/**
+	 * Get detailed node information
+	 */
+	async getNodeDetails(nodeName: string): Promise<BlokExecutionResult> {
+		try {
+			const startTime = Date.now();
+			const response = await fetch(`${this.baseUrl}/mcp/nodes/${nodeName}`, {
+				method: "GET",
+				headers: this.createHeaders(),
+			});
+
+			const duration = Date.now() - startTime;
+			const timestamp = new Date().toISOString();
+
+			if (!response.ok) {
+				const errorData = await response.text();
+				return {
+					success: false,
+					error: `HTTP ${response.status}: ${errorData}`,
+					metadata: { duration, timestamp },
+				};
+			}
+
+			const data = await response.json();
+			return {
+				success: true,
+				data,
+				metadata: { duration, timestamp },
+			};
+		} catch (error) {
+			return {
+				success: false,
+				error: error instanceof Error ? error.message : "Unknown error",
+				metadata: { duration: 0, timestamp: new Date().toISOString() },
+			};
+		}
+	}
+
+	/**
+	 * Search for nodes by functionality
+	 */
+	async searchNodes(query: string, category?: string): Promise<BlokExecutionResult> {
+		try {
+			const startTime = Date.now();
+			const response = await fetch(`${this.baseUrl}/mcp/nodes/search`, {
+				method: "POST",
+				headers: this.createHeaders(),
+				body: JSON.stringify({ query, category }),
+			});
+
+			const duration = Date.now() - startTime;
+			const timestamp = new Date().toISOString();
+
+			if (!response.ok) {
+				const errorData = await response.text();
+				return {
+					success: false,
+					error: `HTTP ${response.status}: ${errorData}`,
+					metadata: { duration, timestamp },
+				};
+			}
+
+			const data = await response.json();
+			return {
+				success: true,
+				data,
+				metadata: { duration, timestamp },
+			};
+		} catch (error) {
+			return {
+				success: false,
+				error: error instanceof Error ? error.message : "Unknown error",
+				metadata: { duration: 0, timestamp: new Date().toISOString() },
+			};
+		}
+	}
+
+	/**
+	 * CREATE WORKFLOW - Allow AI agents to create new workflows
+	 */
+	async createWorkflow(workflowData: Record<string, unknown>): Promise<BlokExecutionResult> {
+		try {
+			const startTime = Date.now();
+			const response = await fetch(`${this.baseUrl}/mcp/workflows/create`, {
+				method: "POST",
+				headers: this.createHeaders(),
+				body: JSON.stringify(workflowData),
+			});
+
+			const duration = Date.now() - startTime;
+			const timestamp = new Date().toISOString();
+
+			if (!response.ok) {
+				const errorData = await response.text();
+				return {
+					success: false,
+					error: `HTTP ${response.status}: ${errorData}`,
+					metadata: { duration, timestamp },
+				};
+			}
+
+			const data = await response.json();
+			return {
+				success: true,
+				data,
+				metadata: { duration, timestamp },
+			};
+		} catch (error) {
+			return {
+				success: false,
+				error: error instanceof Error ? error.message : "Unknown error",
+				metadata: { duration: 0, timestamp: new Date().toISOString() },
+			};
+		}
+	}
+
+	/**
+	 * UPDATE WORKFLOW - Allow AI agents to update existing workflows
+	 */
+	async updateWorkflow(workflowData: Record<string, unknown>): Promise<BlokExecutionResult> {
+		try {
+			const startTime = Date.now();
+			const response = await fetch(`${this.baseUrl}/mcp/workflows/update`, {
+				method: "PUT",
+				headers: this.createHeaders(),
+				body: JSON.stringify(workflowData),
+			});
+
+			const duration = Date.now() - startTime;
+			const timestamp = new Date().toISOString();
+
+			if (!response.ok) {
+				const errorData = await response.text();
+				return {
+					success: false,
+					error: `HTTP ${response.status}: ${errorData}`,
+					metadata: { duration, timestamp },
+				};
+			}
+
+			const data = await response.json();
+			return {
+				success: true,
+				data,
+				metadata: { duration, timestamp },
+			};
+		} catch (error) {
+			return {
+				success: false,
+				error: error instanceof Error ? error.message : "Unknown error",
+				metadata: { duration: 0, timestamp: new Date().toISOString() },
+			};
+		}
+	}
+
+	/**
+	 * TEST WORKFLOW - Allow AI agents to test workflow execution
+	 */
+	async testWorkflow(workflowName: string, inputs?: Record<string, unknown>): Promise<BlokExecutionResult> {
+		try {
+			const startTime = Date.now();
+			const response = await fetch(`${this.baseUrl}/mcp/workflows/test`, {
+				method: "POST",
+				headers: this.createHeaders(),
+				body: JSON.stringify({ workflowName, inputs }),
+			});
+
+			const duration = Date.now() - startTime;
+			const timestamp = new Date().toISOString();
+
+			if (!response.ok) {
+				const errorData = await response.text();
+				return {
+					success: false,
+					error: `HTTP ${response.status}: ${errorData}`,
+					metadata: { duration, timestamp },
+				};
+			}
+
+			const data = await response.json();
+			return {
+				success: true,
+				data,
+				metadata: { duration, timestamp },
+			};
+		} catch (error) {
+			return {
+				success: false,
+				error: error instanceof Error ? error.message : "Unknown error",
+				metadata: { duration: 0, timestamp: new Date().toISOString() },
+			};
+		}
+	}
+
+	/**
+	 * CREATE NODE - Allow AI agents to create custom nodes
+	 */
+	async createNode(nodeData: Record<string, unknown>): Promise<BlokExecutionResult> {
+		try {
+			const startTime = Date.now();
+			const response = await fetch(`${this.baseUrl}/mcp/nodes/create`, {
+				method: "POST",
+				headers: this.createHeaders(),
+				body: JSON.stringify(nodeData),
+			});
+
+			const duration = Date.now() - startTime;
+			const timestamp = new Date().toISOString();
+
+			if (!response.ok) {
+				const errorData = await response.text();
+				return {
+					success: false,
+					error: `HTTP ${response.status}: ${errorData}`,
+					metadata: { duration, timestamp },
+				};
+			}
+
+			const data = await response.json();
+			return {
+				success: true,
+				data,
+				metadata: { duration, timestamp },
+			};
+		} catch (error) {
+			return {
+				success: false,
+				error: error instanceof Error ? error.message : "Unknown error",
+				metadata: { duration: 0, timestamp: new Date().toISOString() },
+			};
+		}
+	}
+
+	/**
+	 * UPDATE NODE - Allow AI agents to update existing nodes
+	 */
+	async updateNode(nodeData: Record<string, unknown>): Promise<BlokExecutionResult> {
+		try {
+			const startTime = Date.now();
+			const response = await fetch(`${this.baseUrl}/mcp/nodes/update`, {
+				method: "PUT",
+				headers: this.createHeaders(),
+				body: JSON.stringify(nodeData),
+			});
+
+			const duration = Date.now() - startTime;
+			const timestamp = new Date().toISOString();
+
+			if (!response.ok) {
+				const errorData = await response.text();
+				return {
+					success: false,
+					error: `HTTP ${response.status}: ${errorData}`,
+					metadata: { duration, timestamp },
+				};
+			}
+
+			const data = await response.json();
+			return {
+				success: true,
+				data,
+				metadata: { duration, timestamp },
+			};
+		} catch (error) {
+			return {
+				success: false,
+				error: error instanceof Error ? error.message : "Unknown error",
+				metadata: { duration: 0, timestamp: new Date().toISOString() },
+			};
+		}
+	}
+
+	/**
+	 * TEST NODE - Allow AI agents to test node execution
+	 */
+	async testNode(nodeName: string, inputs?: Record<string, unknown>): Promise<BlokExecutionResult> {
+		try {
+			const startTime = Date.now();
+			const response = await fetch(`${this.baseUrl}/mcp/nodes/test`, {
+				method: "POST",
+				headers: this.createHeaders(),
+				body: JSON.stringify({ nodeName, inputs }),
+			});
+
+			const duration = Date.now() - startTime;
+			const timestamp = new Date().toISOString();
+
+			if (!response.ok) {
+				const errorData = await response.text();
+				return {
+					success: false,
+					error: `HTTP ${response.status}: ${errorData}`,
+					metadata: { duration, timestamp },
+				};
+			}
+
+			const data = await response.json();
+			return {
+				success: true,
+				data,
+				metadata: { duration, timestamp },
+			};
+		} catch (error) {
+			return {
+				success: false,
+				error: error instanceof Error ? error.message : "Unknown error",
+				metadata: { duration: 0, timestamp: new Date().toISOString() },
+			};
+		}
+	}
+
+	/**
 	 * Health check for the HTTP Trigger
 	 */
 	async healthCheck(): Promise<boolean> {
