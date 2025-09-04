@@ -1,5 +1,11 @@
 # nanoctl
 
+## 0.1.15
+
+### Patch Changes
+
+- improve .npmrc handling in install and publish commands
+
 ## 0.1.14
 
 ### Patch Changes

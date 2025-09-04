@@ -8,6 +8,7 @@ import { Command, type OptionValues, trackCommandExecution } from "../../service
 import { tokenManager } from "../../services/local-token-manager.js";
 import { manager as pm } from "../../services/package-manager.js";
 import { registryManager } from "../../services/registry-manager.js";
+import { cleanupNpmrcFile } from "../../services/utils.js";
 
 interface NodeModule {
 	importName: string; // e.g., 'awsGetAuthTokenCodeartifact'
@@ -22,6 +23,12 @@ export async function install(opts: OptionValues) {
 	const token = tokenManager.getToken();
 	const npmrcFile = `${opts.directory}/.npmrc`;
 	const logger = p.spinner();
+
+	// --- .npmrc handling state ---
+	let npmrcFileExisted = false;
+	let appendedNpmrcContent = "";
+	// ---
+
 	try {
 		if (!token) throw new Error("Token is invalid.");
 		if (!opts.node) throw new Error("Node name is required.");
@@ -59,11 +66,13 @@ export async function install(opts: OptionValues) {
 		const registry = await registryManager.getRegistryToken(token);
 		if (registry.error) throw new Error("Failed to get registry token.");
 
-		// Create .npmrc file temporarily
+		// Create .npmrc file temporarily (append, don't overwrite)
 		const REGISTRY_URL = `https://${registry.url}`;
 		const npmrcContent = `@${registry.namespace}:registry=${REGISTRY_URL}\n//${registry.url}:_authToken=${registry.token}`;
-		fs.writeFileSync(npmrcFile, npmrcContent);
-		logger.message("Created .npmrc file for authentication.");
+		npmrcFileExisted = fs.existsSync(npmrcFile);
+		appendedNpmrcContent = npmrcContent;
+		fs.appendFileSync(npmrcFile, npmrcContent);
+		logger.message("Appended .npmrc file for authentication.");
 
 		// install the node
 		const nodeName = `@${registry.namespace}/${opts.node}`;
@@ -86,10 +95,9 @@ export async function install(opts: OptionValues) {
 
 		logger.stop("Node installed successfully.");
 	} catch (error) {
-		if (fs.existsSync(npmrcFile)) fs.unlinkSync(npmrcFile);
 		logger.stop((error as Error).message, 1);
 	} finally {
-		if (fs.existsSync(npmrcFile)) fs.unlinkSync(npmrcFile);
+		cleanupNpmrcFile(npmrcFile, npmrcFileExisted, appendedNpmrcContent);
 	}
 }
 

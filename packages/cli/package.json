@@ -1,6 +1,6 @@
 {
 	"name": "nanoctl",
-	"version": "0.1.14",
+	"version": "0.1.15",
 	"author": "Deskree Technologies Inc.",
 	"license": "Apache-2.0",
 	"description": "cli for nanoservice-ts",

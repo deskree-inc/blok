@@ -36,3 +36,20 @@ export function getPreferredEditor(): string {
 			? "Cursor"
 			: "Visual Studio Code";
 }
+
+export function cleanupNpmrcFile(npmrcFile: string, fileExisted: boolean, appendedContent: string) {
+	if (!fs.existsSync(npmrcFile) || !appendedContent) return;
+
+	if (fileExisted) {
+		// Remove only the appended content if present at the end
+		const fileContent = fs.readFileSync(npmrcFile, "utf8");
+		if (fileContent.endsWith(appendedContent)) {
+			const newContent = fileContent.slice(0, -appendedContent.length);
+			fs.writeFileSync(npmrcFile, newContent);
+		}
+		// else: appended content is not at the end, do not modify the file
+	} else {
+		// File didn't exist before, so just remove it
+		fs.unlinkSync(npmrcFile);
+	}
+}

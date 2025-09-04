@@ -8,6 +8,7 @@ import { Command, type OptionValues, trackCommandExecution } from "../../service
 import { tokenManager } from "../../services/local-token-manager.js";
 import { VersionUpdateType, manager as pm } from "../../services/package-manager.js";
 import { registryManager } from "../../services/registry-manager.js";
+import { cleanupNpmrcFile } from "../../services/utils.js";
 
 const exec = util.promisify(child_process.exec);
 
@@ -85,6 +86,12 @@ export async function publish(opts: OptionValues) {
 		name: string;
 		[key: string]: string | boolean | Record<string, string> | string[];
 	} | null = null;
+
+	// --- .npmrc handling state ---
+	let npmrcFileExisted = false;
+	let appendedNpmrcContent = "";
+	// ---
+
 	try {
 		if (!token) throw new Error("Authentication token not found. Please run 'nanoctl login' before publishing.");
 		if (!opts.directory) throw new Error("Directory is required.");
@@ -188,11 +195,13 @@ export async function publish(opts: OptionValues) {
 		const registry = await registryManager.getRegistryToken(token);
 		if (registry.error) throw new Error("Failed to get registry token.");
 
-		// Create .npmrc file temporarily
+		// Create .npmrc file temporarily (append, don't overwrite)
 		const REGISTRY_URL = `https://${registry.url}`;
 		const npmrcContent = `registry=${REGISTRY_URL}\n//${registry.url}:_authToken=${registry.token}`;
-		fs.writeFileSync(npmrcFile, npmrcContent);
-		logger.message("Created .npmrc file for authentication.");
+		npmrcFileExisted = fs.existsSync(npmrcFile);
+		appendedNpmrcContent = npmrcContent;
+		fs.appendFileSync(npmrcFile, npmrcContent);
+		logger.message("Appended authentication to .npmrc file.");
 
 		// Update package.json to add scoped registry
 		const packageJsonPath = `${opts.directory}/package.json`;
@@ -234,10 +243,9 @@ export async function publish(opts: OptionValues) {
 			`Node published successfully \n Node: ${publishResult.id} \n Version: ${publishResult.version} \n Packed Size: ${publishResult.size} bytes / Unpacked Size: ${publishResult.unpackedSize} bytes \n Amount of files: ${publishResult.entryCount}`,
 		);
 	} catch (error) {
-		if (fs.existsSync(npmrcFile)) fs.unlinkSync(npmrcFile);
 		logger.stop((error as Error).message, 1);
 	} finally {
-		if (fs.existsSync(npmrcFile)) fs.unlinkSync(npmrcFile);
+		cleanupNpmrcFile(npmrcFile, npmrcFileExisted, appendedNpmrcContent);
 		if (packageJsonOriginal) {
 			const packageJsonPath = `${opts.directory}/package.json`;
 			fs.writeFileSync(packageJsonPath, JSON.stringify(packageJsonOriginal, null, 2));
