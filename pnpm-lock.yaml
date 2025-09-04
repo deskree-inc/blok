@@ -321,8 +321,8 @@ importers:
         specifier: ^4.34.1
         version: 4.38.0
       yocto-spinner:
-        specifier: ^0.1.1
-        version: 0.1.2
+        specifier: ^0.2.3
+        version: 0.2.3
       zod:
         specifier: ^3.24.0
         version: 3.24.2
@@ -4568,8 +4568,8 @@ packages:
     resolution: {integrity: sha512-Ux4ygGWsu2c7isFWe8Yu1YluJmqVhxqK2cLXNQA5AcC3QfbGNpM7fu0Y8b/z16pXLnFxZYvWhd3fhBY9DLmC6Q==}
     engines: {node: '>=6'}
 
-  yocto-spinner@0.1.2:
-    resolution: {integrity: sha512-VfmLIh/ZSZOJnVRQZc/dvpPP90lWL4G0bmxQMP0+U/2vKBA8GSpcBuWv17y7F+CZItRuO97HN1wdbb4p10uhOg==}
+  yocto-spinner@0.2.3:
+    resolution: {integrity: sha512-sqBChb33loEnkoXte1bLg45bEBsOP9N1kzQh5JZNKj/0rik4zAPTNSAVPj3uQAdc6slYJ0Ksc403G2XgxsJQFQ==}
     engines: {node: '>=18.19'}
 
   yoctocolors@2.1.1:
@@ -9032,7 +9032,7 @@ snapshots:
 
   yn@3.1.1: {}
 
-  yocto-spinner@0.1.2:
+  yocto-spinner@0.2.3:
     dependencies:
       yoctocolors: 2.1.1
 

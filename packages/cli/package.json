@@ -39,7 +39,7 @@
 		"react": "^18.3.0",
 		"simple-git": "^3.27.0",
 		"type-fest": "^4.34.1",
-		"yocto-spinner": "^0.1.1",
+		"yocto-spinner": "^0.2.3",
 		"zod": "^3.24.0",
 		"open": "^10.1.2",
 		"serve-handler": "^6.1.6",
