@@ -1,7 +1,7 @@
 <a id="readme-top"></a>
 
-![GitHub Repo stars](https://img.shields.io/github/stars/deskree-inc/blok)
-![GitHub forks](https://img.shields.io/github/forks/deskree-inc/blok)
+[![GitHub Repo stars](https://img.shields.io/github/stars/deskree-inc/blok)](https://github.com/deskree-inc/blok/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/deskree-inc/blok)](https://github.com/deskree-inc/blok/network/members)
 ![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/deskree-inc/blok)
 ![GitHub License](https://img.shields.io/github/license/deskree-inc/blok)
 ![GitHub contributors](https://img.shields.io/github/contributors/deskree-inc/blok)
