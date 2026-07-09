@@ -83,7 +83,7 @@ export default class HttpTrigger extends TriggerBase {
 			this.app.use(["/:workflow", "/"], async (req: Request, res: Response): Promise<void> => {
 				const id: string = (req.query?.requestId as string) || (uuid() as string);
 				req.query.requestId = undefined;
-				let workflowNameInPath: string = req.params.workflow;
+				let workflowNameInPath: string = String(req.params.workflow ?? "");
 
 				let remoteNodeExecution = false;
 				let runtimeWorkflow: RuntimeWorkflow | undefined;
@@ -150,7 +150,7 @@ export default class HttpTrigger extends TriggerBase {
 						}
 
 						await this.configuration.init(workflowNameInPath, this.nodeMap);
-						let ctx: Context = this.createContext(undefined, workflowNameInPath || req.params.workflow, id);
+						let ctx: Context = this.createContext(undefined, workflowNameInPath || String(req.params.workflow ?? ""), id);
 						req.params = handleDynamicRoute(this.configuration.trigger.http.path, req);
 
 						ctx.logger.log(`Version: ${this.configuration.version}, Method: ${req.method}`);

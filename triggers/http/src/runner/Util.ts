@@ -40,7 +40,7 @@ export function handleDynamicRoute(dynamicRoute: string, req: Request): ParamsDi
 		}
 	}
 
-	return req.params;
+	return req.params as any;
 }
 
 export async function nodeResolver(node: Step): Promise<NodeBase> {

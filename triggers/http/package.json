@@ -20,7 +20,7 @@
 	"devDependencies": {
 		"@types/body-parser": "^1.19.5",
 		"@types/cors": "^2.8.17",
-		"@types/express": "^5.0.0",
+		"@types/express": "5.0.0",
 		"@types/node": "^22.13.4",
 		"copyfiles": "^2.4.1",
 		"nodemon": "^3.1.9",
