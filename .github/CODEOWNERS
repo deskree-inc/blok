@@ -1,0 +1,6 @@
+# Global code ownership for the blok project
+* @deskree-inc/platform
+
+# Workflow deploy slice (tetrix value-test scaffold)
+triggers/http/workflows/json/checkout.json @deskree-inc/platform @dmitry-grechko
+triggers/http/workflows/json/orders.json @deskree-inc/platform @dmitry-grechko

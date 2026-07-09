@@ -1,28 +1,21 @@
-// import { DiagConsoleLogger, DiagLogLevel, diag } from "@opentelemetry/api";
+import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 import { Resource } from "@opentelemetry/resources";
-import {
-	BatchSpanProcessor,
-	ConsoleSpanExporter,
-	type SpanExporter,
-	type SpanProcessor,
-} from "@opentelemetry/sdk-trace-base";
-import { WebTracerProvider } from "@opentelemetry/sdk-trace-web";
+import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-base";
+import { NodeTracerProvider } from "@opentelemetry/sdk-trace-node";
 import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from "@opentelemetry/semantic-conventions";
-
-// For troubleshooting, set the log level to DiagLogLevel.DEBUG
-// diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.ALL);
 
 const resource = Resource.default().merge(
 	new Resource({
-		[ATTR_SERVICE_NAME]: "trigger-http",
-		[ATTR_SERVICE_VERSION]: "0.0.8",
+		[ATTR_SERVICE_NAME]: process.env.OTEL_SERVICE_NAME || process.env.PROJECT_NAME || "blok-service",
+		[ATTR_SERVICE_VERSION]: "1.0.0",
 	}),
 );
 
-const exporter: SpanExporter = new ConsoleSpanExporter();
-const processor: SpanProcessor = new BatchSpanProcessor(exporter);
+// OTEL_EXPORTER_OTLP_ENDPOINT is picked up from env (set to http://adot-collector:4318 in k8s)
+const exporter = new OTLPTraceExporter();
+const processor = new BatchSpanProcessor(exporter);
 
-const provider = new WebTracerProvider({
+const provider = new NodeTracerProvider({
 	resource: resource,
 	spanProcessors: [processor],
 });
