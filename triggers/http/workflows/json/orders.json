@@ -1,0 +1,29 @@
+{
+	"name": "Orders",
+	"description": "Fetch active orders from the dvdrental database",
+	"version": "1.0.0",
+	"trigger": {
+		"http": {
+			"method": "POST",
+			"path": "/",
+			"accept": "application/json"
+		}
+	},
+	"steps": [
+		{
+			"name": "get-orders",
+			"node": "postgres-query",
+			"type": "module"
+		}
+	],
+	"nodes": {
+		"get-orders": {
+			"inputs": {
+				"host": "js/process.env.PG_HOST",
+				"user": "js/process.env.PG_USER",
+				"password": "js/process.env.PG_PASSWORD",
+				"query": "SELECT c.customer_id, c.first_name, c.last_name, c.email, c.customer_status FROM customer c WHERE c.active = 1 ORDER BY c.customer_id LIMIT 20"
+			}
+		}
+	}
+}

@@ -1,0 +1,32 @@
+{
+	"name": "Checkout",
+	"description": "Process a customer checkout by forwarding to the orders data service",
+	"version": "1.0.0",
+	"trigger": {
+		"http": {
+			"method": "POST",
+			"path": "/",
+			"accept": "application/json"
+		}
+	},
+	"steps": [
+		{
+			"name": "place-order",
+			"node": "@nanoservice-ts/api-call",
+			"type": "module"
+		}
+	],
+	"nodes": {
+		"place-order": {
+			"inputs": {
+				"url": "js/process.env.DATA_SERVICE_URL",
+				"method": "POST",
+				"headers": {
+					"Content-Type": "application/json"
+				},
+				"body": "js/ctx.request.body",
+				"responseType": "application/json"
+			}
+		}
+	}
+}
