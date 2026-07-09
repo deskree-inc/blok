@@ -46,4 +46,4 @@ USER node
 EXPOSE 4000/tcp
 EXPOSE 9091/tcp
 
-ENTRYPOINT [ "node", "-r", "./dist/runner/metrics/opentelemetry_metrics.js", "dist/index.js" ]
+ENTRYPOINT [ "node", "-r", "./dist/runner/metrics/opentelemetry_traces.js", "-r", "./dist/runner/metrics/opentelemetry_metrics.js", "dist/index.js" ]
